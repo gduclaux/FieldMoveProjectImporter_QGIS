@@ -850,12 +850,15 @@ class FieldMoveProjectImporter:
             layer.setMapTipTemplate(
                 f"<table>"
                 f"<tr>"
-                f"<th>[%notes%]</th>"
+                f"<th>heading:N[%round(heading,0)%]</th>"
                 f"</tr>"
                 f"<tr>"
                 f"<th>"
                 f'<img src="file:///[%concat({imageFolder},ltrim("image name"))%]" width="350" height="250";">'
                 f"</th>"
+                f"</tr>"
+                f"<tr>"
+                f"<th>[%notes%]</th>"
                 f"</tr>"
                 f"</table>"
             )    
