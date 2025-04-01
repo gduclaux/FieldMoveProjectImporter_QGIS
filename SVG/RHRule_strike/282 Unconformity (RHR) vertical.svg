@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Creator: Rod Holcombe, modified from CorelDRAW 2020 (64-Bit) -->
+<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" width="60mm" height="60mm" version="1.1" style="shape-rendering:geometricPrecision; text-rendering:geometricPrecision; image-rendering:optimizeQuality; fill-rule:evenodd; clip-rule:evenodd"
+viewBox="0 0 7202.45 7202.45"
+ xmlns:xlink="http://www.w3.org/1999/xlink"
+ xmlns:xodm="http://www.corel.com/coreldraw/odm/2003">
+
+ <g id="Square_x0020_frame">
+  <rect fill="none" y="0" width="7202.45" height="7202.45"/>
+  <g>
+   <path fill="param(fill) #000"  d="M3600.2 0l0 7202.45 0 -7202.45zm0 4322.08c720.24,0 1080.37,-304 1080.37,-720.86 0,-416.85 -360.11,-723.53 -1080.37,-723.53 -720.24,3.29 -1080.37,306.68 -1080.37,723.53 0,416.85 360.12,720.24 1080.37,720.86z"/>
+   <path id="1" fill="none"  stroke="param(outline) #000" stroke-width="param(outline-width) 2" d="M3600.2 0l0 7202.45m0 -2880.37c720.24,0 1080.37,-304 1080.37,-720.86 0,-416.85 -360.11,-723.53 -1080.37,-723.53 -720.24,3.29 -1080.37,306.68 -1080.37,723.53 0,416.85 360.12,720.24 1080.37,720.86z"/>
+  </g>
+ </g>
+</svg>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Creator: Rod Holcombe  modified from CorelDRAW 2020 (64-Bit) -->
+<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" width="60mm" height="60.0028mm" version="1.1" style="shape-rendering:geometricPrecision; text-rendering:geometricPrecision; image-rendering:optimizeQuality; fill-rule:evenodd; clip-rule:evenodd"
+viewBox="0 0 4500 4500.21"
+ xmlns:xlink="http://www.w3.org/1999/xlink"
+ xmlns:xodm="http://www.corel.com/coreldraw/odm/2003">
+
+ <g id="Square_x0020_frame">
+  <rect fill="none" x="0" y="0.21" width="4500" height="4500"/>
+ </g>
+ <g id="symbol">
+  <g id="_2025580741760">
+   <path fill="none"  stroke="param(outline) #000" stroke-width="param(outline-width) 1" d="M2258.4 0.21l0 4500m-600 -2250l1200 -1.26"/>
+   <path fill="param(fill) #000" stroke="param(outline) #000" stroke-width="param(outline-width) 1" d="M2258.4 994.29l-755.73 -437.41 755.73 -524.97 738.92 482.57 -738.92 479.82zm0 3472.78l-755.73 -437.42 755.73 -524.97 738.92 482.57 -738.92 479.82z"/>
+  </g>
+ </g>
+</svg>
