@@ -9,10 +9,10 @@ Save repository to disk as a [zip file](https://github.com/gduclaux/FieldMovePro
 ## Usage 
 
 ### Prerequisites
-From your tablet you can extract a FieldMove project in various format. I recommend you export both in KML and as CSV formats and copy those from your tablet to a dekstop computer. Store  the **KML file** and the **CSV project folder** (typically projectX.fm) in a convenient location in your local machine. 
+From your tablet you can extract a FieldMove project in various format. I recommend you export both in KML and as CSV formats and copy those from your tablet to a dekstop computer. Store  the **KMZ file** and the **CSV project folder** (typically projectX.fm) in a convenient location in your local machine. 
 
 ### FieldMove Project Importer plugin
-After installation the plugin is avaliable from the plugin menu, or directly in the toolbar if the *Plugins Toolbar* is activated. Simply press the plugin button and provide the path to the CSV project folder and the KML file, then click **import**.
+After installation the plugin is avaliable from the plugin menu, or directly in the toolbar if the *Plugins Toolbar* is activated. Simply press the plugin button and provide the path to the CSV project folder and the KMZ file, then click **import**.
 
 <p align="center">
   <img width="420" alt="image" src="https://github.com/user-attachments/assets/23293c38-8afa-4b5a-9795-de55a790e81a" />
@@ -34,7 +34,7 @@ Dip labeling is set for both plane and line features. Labels are displayed when 
 
 ## Roadmap
 
-This has only been tested on OSX with QGIS 3.34 (LTR), other architecture support should come if it fails in your system. Add support for KML files (not working at this stage) to display line drawings and polygons.
+This has only been tested on OSX with QGIS 3.34 (LTR), other architecture support should come if it fails in your system. Add support for KMZ files (not working at this stage) to display line drawings and polygons.
 
 ## Credits
    - Plugin construction and manual - Guillaume Duclaux, using QGIS Plugin Builder Plugin & DeepSeek
