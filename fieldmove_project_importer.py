@@ -82,10 +82,10 @@ class FieldMoveImportDialog(QDialog):
         <ul>
             <li>CSV files (localities, lines, planes, notes, and images)</li>
             <li>Basemaps (geotifs) you might have used for mapping</li>
-            <li>KML file storing lines and polygons</li>
+            <li>KMZ file storing lines and polygons</li>
         </ul>
         <p>Select the .fm project folder containing your CSV files (and basemaps)
-        and optionally a KML file for line drawing reference.</p>
+        and optionally a KMZ file for line drawing reference.</p>
         """)
         desc.setWordWrap(True)
         layout.addWidget(desc)
@@ -103,11 +103,11 @@ class FieldMoveImportDialog(QDialog):
         folder_layout.addWidget(folder_btn)
         layout.addLayout(folder_layout)
         
-        # KML file selection
+        # KMZ file selection
         kml_layout = QVBoxLayout()
-        kml_label = QLabel("<b>2. Select KML File (optional):</b>")
+        kml_label = QLabel("<b>2. Select KMZ File (optional):</b>")
         self.kml_edit = QLineEdit()
-        self.kml_edit.setPlaceholderText("Path to KML basemap file")
+        self.kml_edit.setPlaceholderText("Path to KMZ basemap file")
         kml_btn = QPushButton("Browse...")
         kml_btn.clicked.connect(self.select_kml)
         
