@@ -3,7 +3,7 @@ A QGIS plugin to help geologists importing [FieldMove](https://www.petex.com/pe-
 
 ## Install
 
-Save repository to disk as a [zip file](https://github.com/gduclaux/FieldMoveProjectImporter_QGIS/archive/refs/heads/main.zip). Use QGIS Plugin Manager to load directly the FieldMoveProjectImporter plugin from zip file.
+Save repository to disk as a [zip file](https://github.com/gduclaux/FieldMoveProjectImporter_QGIS/archive/refs/heads/main.zip). Use QGIS Plugin Manager to load directly the FieldMoveProjectImporter plugin from zip file. If in doudt about plugin installation from a zip file watch this [short video](https://www.youtube.com/watch?v=AUQouvFyt34). 
 
 
 ## Usage 
