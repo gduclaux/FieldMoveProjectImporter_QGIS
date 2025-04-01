@@ -37,6 +37,5 @@ Dip labeling is set for both plane and line features. Labels are displayed when 
 This has only been tested on OSX with QGIS 3.34 (LTR), other architecture support should come if it fails in your system. Add support for KML files (not working at this stage) to display line drawings and polygons.
 
 ## Credits
-   - Plugin construction - Guillaume Duclaux, using QGIS Plugin Builder Plugin & DeepSeek
-   - Manual - Guillaume Duclaux
-   - SVG symbols for geological fabrics are from [Rod Holcombe](https://www.holcombe.net.au/software/geoqsymbol.html#download){:target="_blank"}
+   - Plugin construction and manual - Guillaume Duclaux, using QGIS Plugin Builder Plugin & DeepSeek
+   - SVG symbols for geological fabrics are from Rod Holcombe [geoqsymbol page](https://www.holcombe.net.au/software/geoqsymbol.html#download)
