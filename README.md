@@ -39,4 +39,4 @@ This has only been tested on OSX with QGIS 3.34 (LTR), other architecture suppor
 ## Credits
    - Plugin construction - Guillaume Duclaux, using QGIS Plugin Builder Plugin & DeepSeek
    - Manual - Guillaume Duclaux
-   - SVG symbols for geological fabrics are from [Rod Holcombe](https://www.holcombe.net.au/software/geoqsymbol.html#download)
+   - SVG symbols for geological fabrics are from [Rod Holcombe](https://www.holcombe.net.au/software/geoqsymbol.html#download){:target="_blank"}
