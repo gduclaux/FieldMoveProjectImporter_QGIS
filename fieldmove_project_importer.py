@@ -253,18 +253,6 @@ class FieldMoveProjectImporter:
             QgsMessageLog.logMessage(f"Import error: {e}", 'FieldMove', Qgis.Critical)
             QMessageBox.warning(None, "Error", f"Import failed: {str(e)}")
     
-    def _is_valid_project(self, project_dir):
-        """Check if directory contains FieldMove project files"""
-        # Check for .fm extension or presence of CSV/KML files
-        if project_dir.endswith('.fm'):
-            return True
-            
-        for root, dirs, files in os.walk(project_dir):
-            for file in files:
-                if file.lower().endswith('.csv'):
-                    return True
-        return False
-    
     def _process_point_csv(self, csv_path, group):
         """Process CSV files that should be point layers with X/Y/Z coordinates"""
         try:
@@ -475,7 +463,7 @@ class FieldMoveProjectImporter:
         except Exception as e:
             QMessageBox.warning(None, "Error", f"Error processing CSV: {str(e)}")
 
-    def _process_kml(self, kml_path):
+    def _process_kml(self, kml_path, group):
         """Convert KML to GeoPackage"""
         try:
             layer_name = os.path.splitext(os.path.basename(kml_path))[0]
