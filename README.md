@@ -1,5 +1,6 @@
 # FieldMoveProjectImporter_QGIS
-A QGIS plugin to help geologists importing [FieldMove](https://www.petex.com/pe-geology/move-suite/digital-field-mapping/) project features into QGIS. FieldMove free digital mapping app available for iPadOS and Android.
+A QGIS plugin to help geologists importing [FieldMove](https://www.petex.com/pe-geology/move-suite/digital-field-mapping/) project features into QGIS. FieldMove free digital mapping app available for iPadOS and Android. (ctrl + click on the link to access latest template):[![DOI](https://zenodo.org/badge/957117869.svg)](https://doi.org/10.5281/zenodo.15133449)
+
 
 ## Install
 

@@ -480,9 +480,7 @@ class FieldMoveProjectImporter:
             options.layerName = layer_name
             kmz_layer = QgsVectorLayer(kmz_path, layer_name, "ogr")
             
-            if not kmz_layer.isValid():
-                QMessageBox.warning(None, "Error", f"Could not load KMZ file: {kmz_path}")
-                return
+
                 
             error = QgsVectorFileWriter.writeAsVectorFormatV3(
                 kmz_layer,
