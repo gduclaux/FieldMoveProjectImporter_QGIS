@@ -837,8 +837,8 @@ class FieldMoveProjectImporter:
     def _configure_image_map_tips(self, layer, csv_path):
         """Configure map tips to show photo preview and notes"""
         try:
-            # define the images folder path (within the project)
-            imageFolder = "'"+csv_path[:-4]+"s/'"            
+            # define the images folder path (within the project) by reusing the path of the image.csv
+            imageFolder = "'"+csv_path[:-4]+"s"+os.sep+"'"          
             # Configure nice display
             layer.setMapTipTemplate(
                 f"<table>"
@@ -948,99 +948,98 @@ class FieldMoveProjectImporter:
     ## Here go the new functions for KMZ support
 
     def _process_kmz(self, kmz_path, group):
-        """Import LineStrings and Polygons from KMZ with rock unit-based styling.
-        
-        Args:
-            kmz_path: Path to input KMZ file
-            group: 
-        """
-        # Extract KML from KMZ
-        with ZipFile(kmz_path, 'r') as zip_ref:
-            kml_files = [f for f in zip_ref.namelist() if f.endswith('.kml')]
-            if not kml_files:
-                raise ValueError("No KML file found in KMZ")
-            
-            # Extract first KML to temp dir
-            temp_dir = tempfile.mkdtemp()
-            kmz_path = os.path.join(temp_dir, kml_files[0])
-            with open(kmz_path, 'wb') as f:
-                f.write(zip_ref.read(kml_files[0]))
-        
-        # Parse KML and import to QGIS
-        root = QgsProject.instance()
-        layers = []
-        
-        # Create memory layer for LineStrings
-        line_layer = QgsVectorLayer("LineString?crs=EPSG:4326", "Geological_Lines", "memory")
-        line_provider = line_layer.dataProvider()
-        line_provider.addAttributes([
-            QgsField("name", QVariant.String),
-            QgsField("snippet", QVariant.String),
-            QgsField("rock_unit", QVariant.String)
-        ])
-        line_layer.updateFields()
-        
-        # Create memory layer for Polygons
-        poly_layer = QgsVectorLayer("Polygon?crs=EPSG:4326", "Geological_Polygons", "memory")
-        poly_provider = poly_layer.dataProvider()
-        poly_provider.addAttributes([
-            QgsField("name", QVariant.String),
-            QgsField("snippet", QVariant.String),
-            QgsField("rock_unit", QVariant.String)
-        ])
-        poly_layer.updateFields()
-        
-        # Parse KML and extract features
-        tree = ET.parse(kmz_path)
-        ns = {'kml': 'http://www.opengis.net/kml/2.0'}
-        for placemark in tree.findall('.//kml:Placemark', ns):
-            geom = None
-            name = placemark.find('kml:name', ns)
-            name = name.text if name is not None else ""
-            
-            snippet = placemark.find('kml:snippet', ns)
-            snippet = snippet.text if snippet is not None else ""
-            
-            # Extract rock unit from snippet (customize this pattern as needed)
-            rock_unit = placemark.find('kml:description', ns)
-            rock_unit = rock_unit.text if snippet is not None else ""
-            
-            # LineString handling
-            line_string = placemark.find('.//kml:LineString/kml:coordinates', ns)
-            if line_string is not None:
-                coords = [list(map(float, c.split(',')[:2])) 
-                        for c in line_string.text.strip().split()]
-                print(coords)
-                geom = QgsGeometry.fromPolylineXY([QgsPointXY(x, y) for x, y in coords])
+        """Convert KMZ to GeoPackage"""
+        try:
+            """Import LineStrings and Polygons from KMZ and style based on predefined color.
+            Args:
+                kmz_path: Path to input KMZ file
+                group: 
+            """
+            # Extract KML from KMZ
+            with ZipFile(kmz_path, 'r') as zip_ref:
+                kml_files = [f for f in zip_ref.namelist() if f.endswith('.kml')]
+                if not kml_files:
+                    raise ValueError("No KML file found in KMZ")
                 
-                feat = QgsFeature(line_layer.fields())
-                feat.setGeometry(geom)
-                feat.setAttributes([name, snippet, rock_unit])
-                line_provider.addFeature(feat)
+                # Extract first KML to temp dir
+                temp_dir = tempfile.mkdtemp()
+                kmz_path = os.path.join(temp_dir, kml_files[0])
+                with open(kmz_path, 'wb') as f:
+                    f.write(zip_ref.read(kml_files[0]))
             
-            # Polygon handling
-            polygon = placemark.find('.//kml:Polygon/kml:outerBoundaryIs/kml:LinearRing/kml:coordinates', ns)
-            if polygon is not None:
-                coords = [list(map(float, c.split(',')[:2])) 
-                        for c in polygon.text.strip().split()]
-                print(coords)
-                geom = QgsGeometry.fromPolygonXY([[QgsPointXY(x, y) for x, y in coords]])
+            # Parse KML and import to QGIS
+            root = QgsProject.instance()
+            layers = []
+            
+            # Create memory layer for LineStrings
+            line_layer = QgsVectorLayer("LineString?crs=EPSG:4326", "Geological_Lines", "memory")
+            line_provider = line_layer.dataProvider()
+            line_provider.addAttributes([
+                QgsField("name", QVariant.String),
+                QgsField("snippet", QVariant.String),
+                QgsField("rock_unit", QVariant.String)
+            ])
+            line_layer.updateFields()
+            
+            # Create memory layer for Polygons
+            poly_layer = QgsVectorLayer("Polygon?crs=EPSG:4326", "Geological_Polygons", "memory")
+            poly_provider = poly_layer.dataProvider()
+            poly_provider.addAttributes([
+                QgsField("name", QVariant.String),
+                QgsField("snippet", QVariant.String),
+                QgsField("rock_unit", QVariant.String)
+            ])
+            poly_layer.updateFields()
+            
+            # Parse KML and extract features
+            tree = ET.parse(kmz_path)
+            ns = {'kml': 'http://www.opengis.net/kml/2.0'}
+            for placemark in tree.findall('.//kml:Placemark', ns):
+                geom = None
+                name = placemark.find('kml:name', ns)
+                name = name.text if name is not None else ""
                 
-                feat = QgsFeature(poly_layer.fields())
-                feat.setGeometry(geom)
-                feat.setAttributes([name, snippet, rock_unit])
-                poly_provider.addFeature(feat)
+                snippet = placemark.find('kml:snippet', ns)
+                snippet = snippet.text if snippet is not None else ""
+                
+                # Extract rock unit from snippet (customize this pattern as needed)
+                rock_unit = placemark.find('kml:description', ns)
+                rock_unit = rock_unit.text if snippet is not None else ""
+                
+                # LineString handling
+                line_string = placemark.find('.//kml:LineString/kml:coordinates', ns)
+                if line_string is not None:
+                    coords = [list(map(float, c.split(',')[:2])) 
+                            for c in line_string.text.strip().split()]
+                    print(coords)
+                    geom = QgsGeometry.fromPolylineXY([QgsPointXY(x, y) for x, y in coords])
+                    
+                    feat = QgsFeature(line_layer.fields())
+                    feat.setGeometry(geom)
+                    feat.setAttributes([name, snippet, rock_unit])
+                    line_provider.addFeature(feat)
+                
+                # Polygon handling
+                polygon = placemark.find('.//kml:Polygon/kml:outerBoundaryIs/kml:LinearRing/kml:coordinates', ns)
+                if polygon is not None:
+                    coords = [list(map(float, c.split(',')[:2])) 
+                            for c in polygon.text.strip().split()]
+                    print(coords)
+                    geom = QgsGeometry.fromPolygonXY([[QgsPointXY(x, y) for x, y in coords]])
+                    
+                    feat = QgsFeature(poly_layer.fields())
+                    feat.setGeometry(geom)
+                    feat.setAttributes([name, snippet, rock_unit])
+                    poly_provider.addFeature(feat)
 
-        # Add layers to project
-        root.addMapLayer(line_layer)#, False)
-        root.addMapLayer(poly_layer)#, False)
-        
-        # Apply categorized styling
-        #style_line_layer(line_layer, rock_unit_colors)
-        #style_polygon_layer(poly_layer, rock_unit_colors)
-        
-        # Cleanup
-        os.remove(kmz_path)
-        os.rmdir(temp_dir)
+            # Add layers to project
+            root.addMapLayer(line_layer)#, False)
+            root.addMapLayer(poly_layer)#, False)
+            
+            # Cleanup
+            os.remove(kmz_path)
+            os.rmdir(temp_dir)
+        except Exception as e:
+            QMessageBox.warning(None, "Error", f"Error loading KMZ: {str(e)}")
 
     
