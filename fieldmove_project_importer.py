@@ -285,7 +285,11 @@ class FieldMoveProjectImporter:
                 fields = QgsFields()
                 for field in fieldnames:
                     if field.lower() not in [x_col.lower(), y_col.lower(), z_col.lower() if z_col else '']:
-                        fields.append(QgsField(field, QVariant.String))
+                        if field.lower() in ['altitude', 'horiz_precision', 'vert_precision', 'dip', 'dipazimuth', 
+                                              'strike', 'declination', 'plunge', 'plungeazimuth','heading']:
+                            fields.append(QgsField(field, QVariant.Double))
+                        else:
+                            fields.append(QgsField(field, QVariant.String))
                 
                 provider.addAttributes(fields)
                 vlayer.updateFields()
@@ -716,7 +720,7 @@ class FieldMoveProjectImporter:
                     # Create base symbol
                     base_symbol = QgsMarkerSymbol()
                     svg_layer = QgsSvgMarkerSymbolLayer(svg_path)
-                    svg_layer.setSize(10)
+                    svg_layer.setSize(8)
                     svg_layer.setStrokeWidth(0.8)
                     base_symbol.changeSymbolLayer(0, svg_layer)
                     # Create rule-based renderer
