@@ -1,10 +1,12 @@
 # FieldMoveProjectImporter_QGIS
-A QGIS plugin to help geologists importing [FieldMove](https://www.petex.com/pe-geology/move-suite/digital-field-mapping/) project features into QGIS. FieldMove free digital mapping app available for iPadOS and Android. (ctrl + click on the link to access latest template):[![DOI](https://zenodo.org/badge/957117869.svg)](https://doi.org/10.5281/zenodo.15133449)
+A QGIS plugin to help geologists importing [FieldMove](https://www.petex.com/pe-geology/move-suite/digital-field-mapping/) project features into QGIS. FieldMove free digital mapping app available for iPadOS and Android. 
+
+(ctrl + click on the link to access latest template): [![DOI](https://zenodo.org/badge/957117869.svg)](https://doi.org/10.5281/zenodo.15133449)
 
 
 ## Install
 
-Save repository to disk as a [zip file](https://github.com/gduclaux/FieldMoveProjectImporter_QGIS/archive/refs/heads/main.zip). Use QGIS Plugin Manager to load directly the FieldMoveProjectImporter plugin from zip file. If in doudt about plugin installation from a zip file watch this [short video](https://www.youtube.com/watch?v=AUQouvFyt34). 
+Save repository to disk as a [zip file](https://github.com/gduclaux/FieldMoveProjectImporter_QGIS/archive/refs/heads/main.zip). Use *QGIS Plugin Manager* to load directly the FieldMoveProjectImporter plugin from zip file. If in doudt about plugin installation from a zip file watch this [short video](https://www.youtube.com/watch?v=AUQouvFyt34). 
 
 
 ## Usage 
@@ -35,8 +37,9 @@ Dip labeling is set for both plane and line features. Labels are displayed when 
 
 ## Roadmap
 
-This has only been tested on OSX with QGIS 3.34 (LTR), other architecture support should come if it fails in your system. Add support for KMZ files (not working at this stage) to display line drawings and polygons.
+This has only been tested on OSX with QGIS 3.34 (LTR), with increasing testing more architectures support should come. Add support for KMZ files (not working at this stage) to display line drawings and polygons.
 
 ## Credits
    - Plugin construction and manual - Guillaume Duclaux, using QGIS Plugin Builder Plugin & DeepSeek
    - SVG symbols for geological fabrics are from Rod Holcombe [geoqsymbol page](https://www.holcombe.net.au/software/geoqsymbol.html#download)
+   - If you find this plugin useful for your research please cite this plugin using iys Zenodo DOI [![DOI](https://zenodo.org/badge/957117869.svg)](https://doi.org/10.5281/zenodo.15133449)
