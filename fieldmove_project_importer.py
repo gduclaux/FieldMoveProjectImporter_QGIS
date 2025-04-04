@@ -231,7 +231,7 @@ class FieldMoveProjectImporter:
             if existing := root.findGroup(group_name):
                 root.removeChildNode(existing)
             group = root.insertGroup(0, group_name)
-            group2 = group.insertGroup(-1, 'basemaps')
+            group2 = group.insertGroup(4, 'basemaps')
             
 
             # Process files with type checking
@@ -251,6 +251,13 @@ class FieldMoveProjectImporter:
                     elif file_lower.endswith(('.tif', '.tiff')):
                         self._process_geotiff(file_path, group2)
 
+            #now reorder layers
+            for ch in group.children():
+                if ch.name() == 'basemaps':
+                    _ch = ch.clone()
+                    group.insertChildNode(-1, _ch)
+                    group.removeChildNode(ch)
+      
             # Process KMZ if provided and valid
             if kmz_path and isinstance(kmz_path, str) and os.path.exists(kmz_path):
                 self._process_kmz(kmz_path, group)
