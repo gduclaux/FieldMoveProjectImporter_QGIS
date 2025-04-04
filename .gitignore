@@ -3,3 +3,5 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+#binned features
+.DS_Store

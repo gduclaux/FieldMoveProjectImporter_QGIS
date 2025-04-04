@@ -29,12 +29,13 @@ import csv
 from zipfile import ZipFile
 import tempfile
 import os
+from datetime import datetime
 import xml.etree.ElementTree as ET
 from qgis.PyQt.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, 
                                 QPushButton, QFileDialog, QMessageBox,
                                 QAction, QFileDialog, QMessageBox)
 from qgis.PyQt.QtGui import QIcon, QPixmap
-from qgis.PyQt.QtCore import QVariant, Qt
+from qgis.PyQt.QtCore import QMetaType, Qt, QDateTime, QLocale
 from qgis.PyQt.QtGui import QColor  
 from qgis.core import (
     QgsApplication,
@@ -287,10 +288,11 @@ class FieldMoveProjectImporter:
                     if field.lower() not in [x_col.lower(), y_col.lower(), z_col.lower() if z_col else '']:
                         if field.lower() in ['altitude', 'horiz_precision', 'vert_precision', 'dip', 'dipazimuth', 
                                               'strike', 'declination', 'plunge', 'plungeazimuth','heading']:
-                            fields.append(QgsField(field, QVariant.Double))
+                            fields.append(QgsField(field, QMetaType.Type.Double))
+                        elif field.lower() in ['timedate']:
+                            fields.append(QgsField(field, QMetaType.Type.QDateTime))
                         else:
-                            fields.append(QgsField(field, QVariant.String))
-                
+                            fields.append(QgsField(field, QMetaType.Type.QString))
                 provider.addAttributes(fields)
                 vlayer.updateFields()
                 
@@ -319,9 +321,12 @@ class FieldMoveProjectImporter:
                         attributes = []
                         for field in fieldnames:
                             if field.lower() not in [x_col.lower(), y_col.lower(), z_col.lower() if z_col else '']:
-                                attributes.append(row[field])
+                                if field.lower() in ['timedate']:
+                                    qdt = self._parse_datetime(row[field])
+                                    attributes.append(qdt.toString(Qt.ISODate))
+                                else:
+                                    attributes.append(row[field])
                         feat.setAttributes(attributes)
-                        
                         features.append(feat)
                     except (ValueError, KeyError) as e:
                         continue
@@ -369,6 +374,30 @@ class FieldMoveProjectImporter:
         except Exception as e:
             QMessageBox.warning(None, "Error", f"Error processing point CSV: {str(e)}")
 
+    def _parse_datetime(self,date_str: str) -> QDateTime:
+        date_str = date_str.strip()
+        locale = QLocale(QLocale.English)
+        
+        # Try parsing with weekday (e.g., "Sat Oct 19 15:00:33 2024")
+        format_with_weekday = "ddd MMM dd HH:mm:ss yyyy"
+        qdt = locale.toDateTime(date_str, format_with_weekday)
+        
+        if not qdt.isValid():
+            # Try without weekday (e.g., "Oct 19 15:00:33 2024")
+            format_no_weekday = "MMM dd HH:mm:ss yyyy"
+            date_str_no_weekday = " ".join(date_str.split()[1:])  # Remove weekday
+            qdt = locale.toDateTime(date_str_no_weekday, format_no_weekday)
+        
+        if not qdt.isValid():
+            # Fallback to Python's datetime
+            try:
+                py_dt = datetime.strptime(date_str, "%a %b %d %H:%M:%S %Y")
+                qdt = QDateTime(py_dt.year, py_dt.month, py_dt.day, py_dt.hour, py_dt.minute, py_dt.second)
+            except ValueError:
+                qdt = QDateTime()  # Invalid
+        
+        return qdt
+
     def _join_rock_units(self, layer, project_dir):
         """Join rock units information from rock-units.csv to the layer and transfer color to new field"""
         try:
@@ -403,7 +432,7 @@ class FieldMoveProjectImporter:
             
             # Add color field if it doesn't exist
             if layer.fields().indexFromName('color') == -1:
-                layer.addAttribute(QgsField('color', QVariant.String))
+                layer.addAttribute(QgsField('color', QMetaType.Type.QString))
             
             # Update features with color values
             for feature in layer.getFeatures():
@@ -977,9 +1006,9 @@ class FieldMoveProjectImporter:
             line_layer = QgsVectorLayer("LineString?crs=EPSG:4326", "Geological_Lines", "memory")
             line_provider = line_layer.dataProvider()
             line_provider.addAttributes([
-                QgsField("name", QVariant.String),
-                QgsField("snippet", QVariant.String),
-                QgsField("rock_unit", QVariant.String)
+                QgsField("name", QMetaType.Type.QString),
+                QgsField("snippet", QMetaType.Type.QString),
+                QgsField("rock_unit", QMetaType.Type.QString)
             ])
             line_layer.updateFields()
             
@@ -987,9 +1016,9 @@ class FieldMoveProjectImporter:
             poly_layer = QgsVectorLayer("Polygon?crs=EPSG:4326", "Geological_Polygons", "memory")
             poly_provider = poly_layer.dataProvider()
             poly_provider.addAttributes([
-                QgsField("name", QVariant.String),
-                QgsField("snippet", QVariant.String),
-                QgsField("rock_unit", QVariant.String)
+                QgsField("name", QMetaType.Type.QString),
+                QgsField("snippet", QMetaType.Type.QString),
+                QgsField("rock_unit", QMetaType.Type.QString)
             ])
             poly_layer.updateFields()
             
