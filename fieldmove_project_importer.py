@@ -35,9 +35,10 @@ from qgis.PyQt.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QLabel, QLin
                                 QPushButton, QFileDialog, QMessageBox,
                                 QAction, QFileDialog, QMessageBox)
 from qgis.PyQt.QtGui import QIcon, QPixmap
-from qgis.PyQt.QtCore import QMetaType, Qt, QDateTime, QLocale
+from qgis.PyQt.QtCore import QMetaType, Qt, QDateTime, QLocale, QVariant
 from qgis.PyQt.QtGui import QColor  
 from qgis.core import (
+    Qgis,
     QgsApplication,
     QgsVectorLayer,
     QgsField,
@@ -60,6 +61,8 @@ from qgis.core import (
     QgsSvgMarkerSymbolLayer
 )
 
+qgis_version_str = Qgis.QGIS_VERSION
+qgis_version = [int(x) for x in qgis_version_str.split('.')[:2]]
 
 class FieldMoveImportDialog(QDialog):
     def __init__(self, plugin_dir, parent=None):
@@ -295,11 +298,22 @@ class FieldMoveProjectImporter:
                     if field.lower() not in [x_col.lower(), y_col.lower(), z_col.lower() if z_col else '']:
                         if field.lower() in ['altitude', 'horiz_precision', 'vert_precision', 'dip', 'dipazimuth', 
                                               'strike', 'declination', 'plunge', 'plungeazimuth','heading']:
-                            fields.append(QgsField(field, QMetaType.Type.Double))
+                            if qgis_version[1] >= 40 :
+                                fields.append(QgsField(field, QMetaType.Type.Double))
+                            else: 
+                                fields.append(QgsField(field, QVariant.Double))
                         elif field.lower() in ['timedate']:
-                            fields.append(QgsField(field, QMetaType.Type.QDateTime))
+                            if qgis_version[1] >= 40 :
+                                fields.append(QgsField(field, QMetaType.Type.DateTime))
+                            else: 
+                                fields.append(QgsField(field, QVariant.DateTime))
+                            
                         else:
-                            fields.append(QgsField(field, QMetaType.Type.QString))
+                            if qgis_version[1] >= 40 :
+                                fields.append(QgsField(field, QMetaType.Type.QString))
+                            else: 
+                                fields.append(QgsField(field, QVariant.String))
+                            
                 provider.addAttributes(fields)
                 vlayer.updateFields()
                 
@@ -439,7 +453,11 @@ class FieldMoveProjectImporter:
             
             # Add color field if it doesn't exist
             if layer.fields().indexFromName('color') == -1:
-                layer.addAttribute(QgsField('color', QMetaType.Type.QString))
+                if qgis_version[1] >= 40 :
+                    layer.addAttribute(QgsField('color', QMetaType.Type.QString))
+                else: 
+                    layer.addAttribute(QgsField('color', QVariant.String))
+                
             
             # Update features with color values
             for feature in layer.getFeatures():
@@ -876,7 +894,7 @@ class FieldMoveProjectImporter:
         """Configure map tips to show photo preview and notes"""
         try:
             # define the images folder path (within the project) by reusing the path of the image.csv
-            imageFolder = "'"+csv_path[:-4]+"s"+os.sep+"'"          
+            imageFolder = "'"+csv_path[:-4]+"s"+os.path.sep+"'"          
             # Configure nice display
             layer.setMapTipTemplate(
                 f"<table>"
@@ -1012,21 +1030,31 @@ class FieldMoveProjectImporter:
             # Create memory layer for LineStrings
             line_layer = QgsVectorLayer("LineString?crs=EPSG:4326", "Geological_Lines", "memory")
             line_provider = line_layer.dataProvider()
-            line_provider.addAttributes([
-                QgsField("name", QMetaType.Type.QString),
-                QgsField("snippet", QMetaType.Type.QString),
-                QgsField("rock_unit", QMetaType.Type.QString)
-            ])
+            if qgis_version[1] >= 40 :
+                line_provider.addAttributes([
+                    QgsField("name", QMetaType.Type.QString),
+                    QgsField("snippet", QMetaType.Type.QString),
+                    QgsField("rock_unit", QMetaType.Type.QString)])
+            else: 
+                line_provider.addAttributes([
+                    QgsField("name", QVariant.String),
+                    QgsField("snippet", QVariant.String),
+                    QgsField("rock_unit", QVariant.String)])            
             line_layer.updateFields()
             
             # Create memory layer for Polygons
             poly_layer = QgsVectorLayer("Polygon?crs=EPSG:4326", "Geological_Polygons", "memory")
             poly_provider = poly_layer.dataProvider()
-            poly_provider.addAttributes([
-                QgsField("name", QMetaType.Type.QString),
-                QgsField("snippet", QMetaType.Type.QString),
-                QgsField("rock_unit", QMetaType.Type.QString)
-            ])
+            if qgis_version[1] >= 40 :
+                poly_provider.addAttributes([
+                    QgsField("name", QMetaType.Type.QString),
+                    QgsField("snippet", QMetaType.Type.QString),
+                    QgsField("rock_unit", QMetaType.Type.QString)])
+            else: 
+                poly_provider.addAttributes([
+                    QgsField("name", QVariant.String),
+                    QgsField("snippet", QVariant.String),
+                    QgsField("rock_unit", QVariant.String)])
             poly_layer.updateFields()
             
             # Parse KML and extract features

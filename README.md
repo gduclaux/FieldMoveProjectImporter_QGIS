@@ -12,7 +12,7 @@ Save repository to disk as a [zip file](https://github.com/gduclaux/FieldMovePro
 ## Usage 
 
 ### Prerequisites
-From your tablet you can extract a FieldMove project in various format. I recommend you export both in KML and as CSV formats and copy those from your tablet to a dekstop computer. Store  the **KMZ file** and the **CSV project folder** (typically projectX.fm) in a convenient location in your local machine. 
+From your tablet you can extract a FieldMove project in various format. I recommend you export both in KMZ and as CSV formats and copy those from your tablet to a dekstop computer. Store the **KMZ file** and the **CSV project folder** (typically projectX.fm) in a convenient location in your local machine. The KMZ file is used to import line and polygons drawings from the FieldMove project.
 
 ### FieldMove Project Importer plugin
 After installation the plugin is avaliable from the plugin menu, or directly in the toolbar if the *Plugins Toolbar* is activated. Simply press the plugin button and provide the path to the CSV project folder and the KMZ file, then click **import**.
@@ -37,9 +37,11 @@ Dip labeling is set for both plane and line features. Labels are displayed when 
 
 ## Roadmap
 
-This has only been tested on OSX with QGIS 3.34 (LTR), with increasing testing more architectures support should come. Add support for KMZ files (not working at this stage) to display line drawings and polygons.
+   - This has only been tested on OSX with QGIS 3.34, with increasing testing more architectures support should come. 
+   - Add support for KMZ files (not working at this stage) to display line drawings and polygons.
+   - Develop a template for generating a fieldbook-like report from the digital data. 
 
 ## Credits
    - Plugin construction and manual - Guillaume Duclaux, using QGIS Plugin Builder Plugin & DeepSeek
    - SVG symbols for geological fabrics are from Rod Holcombe [geoqsymbol page](https://www.holcombe.net.au/software/geoqsymbol.html#download)
-   - If you find this plugin useful for your research please cite this plugin using iys Zenodo DOI [![DOI](https://zenodo.org/badge/957117869.svg)](https://doi.org/10.5281/zenodo.15133449)
+   - If you find this plugin useful for your research please cite this plugin using Zenodo DOI [![DOI](https://zenodo.org/badge/957117869.svg)](https://doi.org/10.5281/zenodo.15133449)
