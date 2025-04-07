@@ -297,14 +297,14 @@ class FieldMoveProjectImporter:
                 for field in fieldnames:
                     if field.lower() not in [x_col.lower(), y_col.lower(), z_col.lower() if z_col else '']:
                         if field.lower() in ['altitude', 'horiz_precision', 'vert_precision', 'dip', 'dipazimuth', 
-                                              'strike', 'declination', 'plunge', 'plungeazimuth','heading']:
+                                              'strike', 'declination', 'plunge', 'plungeazimuth','heading','x','y']:
                             if qgis_version[1] >= 40 :
                                 fields.append(QgsField(field, QMetaType.Type.Double))
                             else: 
                                 fields.append(QgsField(field, QVariant.Double))
                         elif field.lower() in ['timedate']:
                             if qgis_version[1] >= 40 :
-                                fields.append(QgsField(field, QMetaType.Type.DateTime))
+                                fields.append(QgsField(field, QMetaType.Type.QDateTime))
                             else: 
                                 fields.append(QgsField(field, QVariant.DateTime))
                             
@@ -894,21 +894,24 @@ class FieldMoveProjectImporter:
         """Configure map tips to show photo preview and notes"""
         try:
             # define the images folder path (within the project) by reusing the path of the image.csv
-            imageFolder = "'"+csv_path[:-4]+"s"+os.path.sep+"'"          
+            if os.name in ["nt"]:
+                imageFolder = "'"+os.path.dirname(csv_path)+"\images\="+ "'"
+            else :
+                imageFolder = "'"+csv_path[:-4]+"s"+os.path.sep+"'"          
             # Configure nice display
             layer.setMapTipTemplate(
-                f"<table>"
-                f"<tr>"
-                f"<th>heading:N[%round(heading,0)%]</th>"
-                f"</tr>"
-                f"<tr>"
-                f"<th>"
-                f'<img src="file:///[%concat({imageFolder},ltrim("image name"))%]" width="350" height="250";">'
-                f"</th>"
-                f"</tr>"
-                f"<tr>"
-                f"<th>[%notes%]</th>"
-                f"</tr>"
+                f"<table>"f"\n"
+                f"<tr>"f"\n"
+                f"\t"f"<th>heading:N[%round(heading,0)%]</th>"f"\n"
+                f"</tr>"f"\n"
+                f"<tr>"f"\n"
+                f"<th>"f"\n"
+                f"\t"f'<img src="file:///[%concat({imageFolder},ltrim("image name"))%]" width="350" height="250";">'f"\n"
+                f"</th>"f"\n"
+                f"</tr>"f"\n"
+                f"<tr>"f"\n"
+                f"\t"f"<th>[%notes%]</th>"f"\n"
+                f"</tr>"f"\n"
                 f"</table>"
             )    
         except Exception as e:

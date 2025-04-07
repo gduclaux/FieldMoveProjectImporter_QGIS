@@ -37,7 +37,7 @@ Dip labeling is set for both plane and line features. Labels are displayed when 
 
 ## Roadmap
 
-   - This has only been tested on OSX with QGIS 3.34, with increasing testing more architectures support should come. 
+   - This plugin has been tested on OSX and Windows with QGIS 3.40(LTR). 
    - Add support for KMZ files (not working at this stage) to display line drawings and polygons.
    - Develop a template for generating a fieldbook-like report from the digital data. 
 
