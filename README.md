@@ -40,6 +40,7 @@ Dip labeling is set for both plane and line features. Labels are displayed when 
    - This plugin has been tested on OSX and Windows with QGIS 3.40(LTR). 
    - Add support for KMZ files (not working at this stage) to display line drawings and polygons.
    - Develop a template for generating a fieldbook-like report from the digital data. 
+   - Develop an exporter to display and analyse structural measurements in Allmendinger Stereonet software.
 
 ## Credits
    - Plugin construction and manual - Guillaume Duclaux, using QGIS Plugin Builder Plugin & DeepSeek
