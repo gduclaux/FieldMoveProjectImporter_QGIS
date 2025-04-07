@@ -895,7 +895,7 @@ class FieldMoveProjectImporter:
         try:
             # define the images folder path (within the project) by reusing the path of the image.csv
             if os.name in ["nt"]:
-                imageFolder = "'"+os.path.dirname(csv_path)+"\images\="+ "'"
+                imageFolder = "'"+os.path.dirname(csv_path)+"/images/"+ "'"
             else :
                 imageFolder = "'"+csv_path[:-4]+"s"+os.path.sep+"'"          
             # Configure nice display
