@@ -12,16 +12,16 @@ Save repository to disk as a [zip file](https://github.com/gduclaux/FieldMovePro
 ## Usage 
 
 ### Prerequisites
-From your tablet you can extract a FieldMove project in various format. I recommend you export both in KMZ and as CSV formats and copy those from your tablet to a dekstop computer. Store the **KMZ file** and the **CSV project folder** (typically projectX.fm) in a convenient location in your local machine. The KMZ file is used to import line and polygons drawings from the FieldMove project.
+From your tablet you can extract a FieldMove project in various format. I recommend you export in CSV format and copy the whole folder from your tablet to a dekstop computer. Store the **CSV project folder** (typically projectX.fm) in a convenient location in your local machine. 
 
 ### FieldMove Project Importer plugin
-After installation the plugin is avaliable from the plugin menu, or directly in the toolbar if the *Plugins Toolbar* is activated. Simply press the plugin button and provide the path to the CSV project folder and the KMZ file, then click **import**.
+After installation the plugin is avaliable from the plugin menu, or directly in the toolbar if the *Plugins Toolbar* is activated. Simply press the plugin button and provide the path to the CSV project folder then click **import**.
 
 <p align="center">
   <img width="420" alt="image" src="https://github.com/user-attachments/assets/23293c38-8afa-4b5a-9795-de55a790e81a" />
 </p>
 
-The plugin converts the CSV files to individual GeoPackages stores in the CSV Projet foder.
+The plugin converts the CSV files to individual GeoPackages stored in the CSV Projet foder.
 
 The plugin will generate a new Group (the group name is concatenation of "FieldMoveImport_" and your CSV project folder name - also the project id in FieldMove) in QGIS LayersTree, and load and display the imported point layers as well as any basemap imagery you might have in your project. Polygons and line drawings are not yet supported. 
 
@@ -38,8 +38,8 @@ Dip labeling is set for both plane and line features. Labels are displayed when 
 ## Roadmap
 
    - This plugin has been tested on OSX and Windows with QGIS 3.40(LTR). 
-   - Add support for KMZ files (not working at this stage) to display line drawings and polygons.
-   - Develop a template for generating a fieldbook-like report from the digital data. 
+   - Improve polyline rendering
+   - Develop a template for generating a fieldbook-like report from all digital data. 
    - Develop an exporter to display and analyse structural measurements in Allmendinger Stereonet software.
 
 ## Credits
