@@ -18,7 +18,7 @@ From your tablet you can extract a FieldMove project in various format. I recomm
 After installation the plugin is avaliable from the plugin menu, or directly in the toolbar if the *Plugins Toolbar* is activated. Simply press the plugin button and provide the path to the CSV project folder then click **import**.
 
 <p align="center">
-  <img width="420" alt="image" src="https://github.com/user-attachments/assets/23293c38-8afa-4b5a-9795-de55a790e81a" />
+  <img width="420" alt="image" src="https://github.com/user-attachments/assets/c9343426-f786-4a8b-afb4-dbcf25be227c" />
 </p>
 
 The plugin converts the CSV files to individual GeoPackages stored in the CSV Projet foder.
