@@ -25,12 +25,7 @@
 """
 import os
 import csv
-#from qgis.core import *
-from zipfile import ZipFile
-import tempfile
-import os
 from datetime import datetime
-import xml.etree.ElementTree as ET
 from qgis.PyQt.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, 
                                 QPushButton, QFileDialog, QMessageBox,
                                 QAction, QFileDialog, QMessageBox)
@@ -45,9 +40,11 @@ from qgis.core import (
     QgsFields,
     QgsFeature,
     QgsGeometry,
+    QgsLineString,
     QgsPoint,
     QgsPointXY,
     QgsMarkerSymbol,
+    QgsLineSymbol,
     QgsMessageLog,
     QgsSingleSymbolRenderer,
     QgsVectorFileWriter,
@@ -91,17 +88,15 @@ class FieldMoveImportDialog(QDialog):
         <ul>
             <li>CSV files (localities, lines, planes, notes, and images)</li>
             <li>Basemaps (geotifs) you might have used for mapping</li>
-            <li>KMZ file storing lines and polygons</li>
         </ul>
-        <p>Select the .fm project folder containing your CSV files (and basemaps)
-        and optionally a KMZ file for line drawing reference.</p>
+        <p>Select the .fm project folder containing your CSV files (and basemaps).</p>
         """)
         desc.setWordWrap(True)
         layout.addWidget(desc)
         
         # Project folder selection
         folder_layout = QVBoxLayout()
-        folder_label = QLabel("<b>1. Select FieldMove Project Folder:</b>")
+        folder_label = QLabel("<b>Select FieldMove Project Folder:</b>")
         self.folder_edit = QLineEdit()
         self.folder_edit.setPlaceholderText("Path to folder containing CSV files")
         folder_btn = QPushButton("Browse...")
@@ -111,19 +106,6 @@ class FieldMoveImportDialog(QDialog):
         folder_layout.addWidget(self.folder_edit)
         folder_layout.addWidget(folder_btn)
         layout.addLayout(folder_layout)
-        
-        # KMZ file selection
-        kml_layout = QVBoxLayout()
-        kml_label = QLabel("<b>2. Select KMZ File (optional):</b>")
-        self.kml_edit = QLineEdit()
-        self.kml_edit.setPlaceholderText("Path to KMZ basemap file")
-        kml_btn = QPushButton("Browse...")
-        kml_btn.clicked.connect(self.select_kml)
-        
-        kml_layout.addWidget(kml_label)
-        kml_layout.addWidget(self.kml_edit)
-        kml_layout.addWidget(kml_btn)
-        layout.addLayout(kml_layout)
         
         # Button box (using QHBoxLayout)
         btn_box = QHBoxLayout()  # Now properly imported
@@ -148,20 +130,9 @@ class FieldMoveImportDialog(QDialog):
         if folder:
             self.folder_edit.setText(folder)
     
-    def select_kml(self):
-        kml, _ = QFileDialog.getOpenFileName(
-            self,
-            "Select KML File",
-            "",
-            "KML Files (*.kml *.kmz)"
-        )
-        if kml:
-            self.kml_edit.setText(kml)
-    
     def get_paths(self):
         return {
-            'project_dir': self.folder_edit.text(),
-            'kmz_path': self.kml_edit.text() if self.kml_edit.text() else None
+            'project_dir': self.folder_edit.text()
         }
     
 class FieldMoveProjectImporter:
@@ -178,8 +149,12 @@ class FieldMoveProjectImporter:
             "note.csv", 
             "localities.csv", 
             "plane.csv", 
-            "line.csv"#, 
-            #"sighting.csv"
+            "line.csv"
+        ]
+
+        # List of CSV files that should be treated as point layers
+        self.line_csvs = [
+            "polyline.csv"
         ]
 
     def initGui(self):
@@ -220,7 +195,7 @@ class FieldMoveProjectImporter:
             QMessageBox.warning(self.iface.mainWindow(), "Error", "Invalid project folder")
             return
             
-        self.import_project(project_dir=paths['project_dir'], kmz_path=paths['kmz_path'])
+        self.import_project(project_dir=paths['project_dir'])
     
     def import_project(self, project_dir, kmz_path=None):
         try:
@@ -234,8 +209,7 @@ class FieldMoveProjectImporter:
             if existing := root.findGroup(group_name):
                 root.removeChildNode(existing)
             group = root.insertGroup(0, group_name)
-            group2 = group.insertGroup(4, 'basemaps')
-            
+            group2 = group.insertGroup(4, 'basemaps')      
 
             # Process files with type checking
             for root_dir, _, files in os.walk(project_dir):
@@ -249,6 +223,8 @@ class FieldMoveProjectImporter:
                     if file_lower.endswith('.csv'):
                         if file_lower in [f.lower() for f in self.point_csvs]:
                             self._process_point_csv(file_path, group)
+                        elif file_lower in [f.lower() for f in self.line_csvs]:
+                            self._process_line_csv(file_path, group)
                         else:
                             continue #self._process_csv(file_path, group)
                     elif file_lower.endswith(('.tif', '.tiff')):
@@ -260,10 +236,6 @@ class FieldMoveProjectImporter:
                     _ch = ch.clone()
                     group.insertChildNode(-1, _ch)
                     group.removeChildNode(ch)
-      
-            # Process KMZ if provided and valid
-            if kmz_path and isinstance(kmz_path, str) and os.path.exists(kmz_path):
-                self._process_kmz(kmz_path, group)
 
         except Exception as e:
             QgsMessageLog.logMessage(f"Import error: {e}", 'FieldMove', Qgis.Critical)
@@ -394,6 +366,102 @@ class FieldMoveProjectImporter:
             
         except Exception as e:
             QMessageBox.warning(None, "Error", f"Error processing point CSV: {str(e)}")
+
+    def _process_line_csv(self, csv_path, group):
+        try:
+            layer_name = os.path.splitext(os.path.basename(csv_path))[0]
+            # Load coordinate data
+            coord_data = {}
+            with open(csv_path, 'r') as f:
+                reader = csv.DictReader(f, skipinitialspace=True)
+                for row in reader:
+                    data_id = row['dataId']
+                    if data_id not in coord_data:
+                        coord_data[data_id] = []
+                    # Use longitude,latitude (geographic)
+                    coord_data[data_id].append(QgsPoint(float(row['longitude']), float(row['latitude'])))
+
+            # Load attribute data
+            attributes = {}
+            with open(csv_path[:-4]+'-attributes.csv', 'r') as f:
+                reader = csv.DictReader(f, skipinitialspace=True)
+                for row in reader:
+                    attributes[row['dataId']] = row
+
+            # Create memory layer
+            layer = QgsVectorLayer("LineString?crs=EPSG:4326", "polylines", "memory")  
+            provider = layer.dataProvider()
+
+            # Add fields from attribute file
+            fields = QgsFields()
+            fields.append(QgsField("dataId", QVariant.String))
+            fields.append(QgsField("localityId", QVariant.String))
+            fields.append(QgsField("localityName", QVariant.String))
+            fields.append(QgsField("rockUnit", QVariant.String))
+            fields.append(QgsField("thickness", QVariant.Double))
+            fields.append(QgsField("opacity", QVariant.Double))
+            fields.append(QgsField("style", QVariant.String))
+            fields.append(QgsField("filled", QVariant.Int))
+            fields.append(QgsField("timedate", QVariant.String))
+            fields.append(QgsField("notes", QVariant.String))
+            provider.addAttributes(fields)
+            layer.updateFields()
+
+            # Create features
+            for data_id, points in coord_data.items():
+                if len(points) < 2:
+                    continue  # Need at least 2 points for a line
+                    
+                feat = QgsFeature()
+                line = QgsLineString(points)
+                feat.setGeometry(QgsGeometry(line))
+                
+                # Set attributes
+                attr_data = attributes.get(data_id, {})
+                feat.setAttributes([
+                    data_id,
+                    attr_data.get('localityId', ''),
+                    attr_data.get('localityName', ''),
+                    attr_data.get('rockUnit', ''),
+                    float(attr_data.get('thickness', 0)),
+                    float(attr_data.get('opacity', 1)),
+                    attr_data.get('style', 'solid'),
+                    int(attr_data.get('filled', 1)),
+                    attr_data.get('timedate', ''),
+                    attr_data.get('notes', '')
+                ])
+                
+                provider.addFeature(feat)
+
+            layer.updateExtents()
+            gpkg_path = os.path.join(os.path.dirname(csv_path), f"{layer_name}.gpkg")
+
+            # Optionally save to GeoPackage
+            error = QgsVectorFileWriter.writeAsVectorFormat(
+                layer,
+                gpkg_path,
+                'UTF-8',
+                layer.crs(),
+                'GPKG'
+            )
+
+            # Load the GeoPackage
+            gpkg_layer = QgsVectorLayer(f"{gpkg_path}|layername={layer_name}", layer_name, "ogr")
+            if gpkg_layer.isValid():
+                # For polyline try to join with rock-units.csv
+                self._join_rock_units(gpkg_layer, os.path.dirname(csv_path))
+                
+                self._style_layer(gpkg_layer, layer_name)
+                QgsProject.instance().addMapLayer(gpkg_layer, False)
+
+            # After creating gpkg_layer:
+            if gpkg_layer.isValid():
+                self._style_layer(gpkg_layer, layer_name)
+                QgsProject.instance().addMapLayer(gpkg_layer, False)
+                group.addLayer(gpkg_layer)
+
+        except Exception as e:
+            QMessageBox.warning(None, "Error", f"Error processing line CSV: {str(e)}")
 
     def _parse_datetime(self,date_str: str) -> QDateTime:
         date_str = date_str.strip()
@@ -526,44 +594,6 @@ class FieldMoveProjectImporter:
         except Exception as e:
             QMessageBox.warning(None, "Error", f"Error processing CSV: {str(e)}")
 
-    '''def _process_kml(self, kmz_path, group):
-        """Convert KMZ to GeoPackage"""
-        try:
-            layer_name = os.path.splitext(os.path.basename(kmz_path))[0]
-            gpkg_path = os.path.join(os.path.dirname(kmz_path), f"{layer_name}.gpkg")
-            
-            # Convert KMZ to GeoPackage
-            options = QgsVectorFileWriter.SaveVectorOptions()
-            options.driverName = "GPKG"
-            options.layerName = layer_name
-            kmz_layer = QgsVectorLayer(kmz_path, layer_name, "ogr")
-            
-
-                
-            error = QgsVectorFileWriter.writeAsVectorFormatV3(
-                kmz_layer,
-                gpkg_path,
-                QgsProject.instance().transformContext(),
-                options
-            )
-            
-            if error[0] != QgsVectorFileWriter.NoError:
-                QMessageBox.warning(None, "Error", f"Could not save GeoPackage: {gpkg_path}")
-                return
-                
-            # Load the GeoPackage
-            gpkg_layer = QgsVectorLayer(f"{gpkg_path}|layername={layer_name}", layer_name, "ogr")
-            if gpkg_layer.isValid():
-                QgsProject.instance().addMapLayer(gpkg_layer, False)
-
-            # the  group layers:
-            if gpkg_layer.isValid():
-                QgsProject.instance().addMapLayer(gpkg_layer, False)
-                group.addLayer(gpkg_layer)
-                
-        except Exception as e:
-            QMessageBox.warning(None, "Error", f"Error processing KMZ: {str(e)}")'''
-
     def _process_geotiff(self, geotif_path, group):
         """Load and style a GeoTIFF file"""
         try:
@@ -635,7 +665,7 @@ class FieldMoveProjectImporter:
                     # Get unique combinations of rockunit and planetype
                     unique_combos = {}
                     for feature in layer.getFeatures():
-                        rockunit = str(feature[rockunit_field])#.strip()
+                        rockunit = str(feature[rockunit_field])
                         planetype = str(feature[planetype_field]).strip()
                         color = str(feature[color_field]).strip()
                         strike = float(feature[strike_field]) if feature[strike_field] else 0
@@ -838,8 +868,65 @@ class FieldMoveProjectImporter:
                     # Apply the renderer
                     layer.setRenderer(renderer)
                     layer.triggerRepaint()
-                    return         
+                    return   
+                
+            elif layer_name.lower() == 'polyline':
+                default_symbol = QgsLineSymbol.createSimple({'color':'#aaaaaa', 'width':'0.5'})
+    
+                # Initialize rule-based renderer
+                renderer = QgsRuleBasedRenderer(default_symbol)
+                root_rule = renderer.rootRule()
+                
+                # Example 1: Rule based on rockUnit with color from hex attribute
+                rock_units = set()
+                for feat in layer.getFeatures():
+                    rock_units.add(feat['rockUnit'])
+                
+                for unit in rock_units:
+                    # Create a symbol for this rock unit
+                    symbol = QgsLineSymbol.createSimple({})
+                    symbol.setColor(QColor('#333333'))  # Default color if not defined
+                    
+                    # Create rule
+                    rule = root_rule.children()[0].clone()
+                    rule.setLabel(f"Rock Unit: {unit}")
+                    rule.setFilterExpression(f'"rockUnit" = \'{unit}\'')
+                    
+                    # Apply data-defined properties
+                    symbol.symbolLayer(0).setDataDefinedProperty(
+                        QgsSymbolLayer.PropertyStrokeColor,
+                        QgsProperty.fromField('color')  # Uses hex color from attribute
+                    )
+                    symbol.symbolLayer(0).setDataDefinedProperty(
+                        QgsSymbolLayer.PropertyStrokeWidth,
+                        QgsProperty.fromField('thickness')
+                    )
+                    
+                    rule.setSymbol(symbol)
+                    root_rule.appendChild(rule)
+                
+                # Example 2: Rule based on style (solid/dashed/dotted)
+                styles = ['solid', 'dashed', 'dotted']
+                for style in styles:
+                    symbol = QgsLineSymbol.createSimple({})
+                    symbol.symbolLayer(0).setPenStyle(
+                        Qt.SolidLine if style == 'solid' else 
+                        Qt.DashLine if style == 'dashed' else 
+                        Qt.DotLine
+                    )
+                    
+                    rule = root_rule.children()[0].clone()
+                    rule.setLabel(f"Line Style: {style}")
+                    rule.setFilterExpression(f'"style" = \'{style}\'')
+                    rule.setSymbol(symbol)
+                    root_rule.appendChild(rule)
+                
+                # Clear default rule
+                #root_rule.removeChild(0)
 
+                # Apply the renderer
+                layer.setRenderer(renderer)
+                layer.triggerRepaint()
 
             # Default styling for other layers
             default_symbol = QgsMarkerSymbol.createSimple({
@@ -852,41 +939,30 @@ class FieldMoveProjectImporter:
 
         except Exception as e:
             QMessageBox.warning(None, "Error", f"Error styling layer: {str(e)}")
-    
-    def _find_svg_for_color(self, color):
-        """Find an SVG symbol that matches the color (optional)"""
-        if not os.path.exists(self.svg_dir):
-            return None
-        
-        try:
-            # Convert color to a string we can match in filenames
-            color_str = QColor(color).name().lower().replace('#', '')
-            
-            # Look for SVG files containing the color code
-            for svg_file in os.listdir(self.svg_dir):
-                if svg_file.endswith('.svg') and color_str in svg_file.lower():
-                    return os.path.join(self.svg_dir, svg_file)
-        except:
-            return None
-        return None
 
     def _configure_map_tips(self, layer, notes_field="notes"):
         """Configure map tips to show notes attribute"""
         try:
-            # Check if layer has notes field
-            fields = layer.fields()
-            notes_idx = fields.indexFromName(notes_field)
-            
-            if notes_idx >= 0:
-                # Enable map tips and set to show notes
-                layer.setMapTipTemplate(f"[% \"{notes_field}\" %]")
-                layer.setDisplayExpression(f"\"{notes_field}\"")
-                
-                # Optional: Configure nicer display
+            # Check if layer is line or plane and display map tips details accordingly
+            if layer.name() in ['line','plane']:
+                rock_field = "rockUnit"
+                if layer.name()=='line': #it's a line
+                    fabric_field = "lineationType"
+                else: # or it's a plane
+                    fabric_field = "planeType"
                 layer.setMapTipTemplate(
-                    f"<b>Notes:</b><br>"
+                    f"<b>Notes: </b>"f"\n"
+                    f"[% \"{notes_field}\" %]<br>"f"\n"
+                    f"<b>Geological Unit: </b>[% \"{rock_field}\" %]<br>"f"\n"
+                    f"<b>Structure Type: </b>[% \"{fabric_field}\" %]<br>"
+                )
+            else: 
+                layer.setMapTipTemplate(
+                    f"<b>Notes: </b>"f"\n"
                     f"[% \"{notes_field}\" %]<br>"
                 )
+            
+
         except Exception as e:
             QMessageBox.warning(None, "Error", f"Error configuring Map tips: {str(e)}")
 
@@ -1002,113 +1078,3 @@ class FieldMoveProjectImporter:
                 svg_cache.rebuild()
         except:
             pass
-
-   
-    ## Here go the new functions for KMZ support
-
-    def _process_kmz(self, kmz_path, group):
-        """Convert KMZ to GeoPackage"""
-        try:
-            """Import LineStrings and Polygons from KMZ and style based on predefined color.
-            Args:
-                kmz_path: Path to input KMZ file
-                group: 
-            """
-            # Extract KML from KMZ
-            with ZipFile(kmz_path, 'r') as zip_ref:
-                kml_files = [f for f in zip_ref.namelist() if f.endswith('.kml')]
-                if not kml_files:
-                    raise ValueError("No KML file found in KMZ")
-                
-                # Extract first KML to temp dir
-                temp_dir = tempfile.mkdtemp()
-                kmz_path = os.path.join(temp_dir, kml_files[0])
-                with open(kmz_path, 'wb') as f:
-                    f.write(zip_ref.read(kml_files[0]))
-            
-            # Parse KML and import to QGIS
-            root = QgsProject.instance()
-            layers = []
-            
-            # Create memory layer for LineStrings
-            line_layer = QgsVectorLayer("LineString?crs=EPSG:4326", "Geological_Lines", "memory")
-            line_provider = line_layer.dataProvider()
-            if qgis_version[1] >= 40 :
-                line_provider.addAttributes([
-                    QgsField("name", QMetaType.Type.QString),
-                    QgsField("snippet", QMetaType.Type.QString),
-                    QgsField("rock_unit", QMetaType.Type.QString)])
-            else: 
-                line_provider.addAttributes([
-                    QgsField("name", QVariant.String),
-                    QgsField("snippet", QVariant.String),
-                    QgsField("rock_unit", QVariant.String)])            
-            line_layer.updateFields()
-            
-            # Create memory layer for Polygons
-            poly_layer = QgsVectorLayer("Polygon?crs=EPSG:4326", "Geological_Polygons", "memory")
-            poly_provider = poly_layer.dataProvider()
-            if qgis_version[1] >= 40 :
-                poly_provider.addAttributes([
-                    QgsField("name", QMetaType.Type.QString),
-                    QgsField("snippet", QMetaType.Type.QString),
-                    QgsField("rock_unit", QMetaType.Type.QString)])
-            else: 
-                poly_provider.addAttributes([
-                    QgsField("name", QVariant.String),
-                    QgsField("snippet", QVariant.String),
-                    QgsField("rock_unit", QVariant.String)])
-            poly_layer.updateFields()
-            
-            # Parse KML and extract features
-            tree = ET.parse(kmz_path)
-            ns = {'kml': 'http://www.opengis.net/kml/2.0'}
-            for placemark in tree.findall('.//kml:Placemark', ns):
-                geom = None
-                name = placemark.find('kml:name', ns)
-                name = name.text if name is not None else ""
-                
-                snippet = placemark.find('kml:snippet', ns)
-                snippet = snippet.text if snippet is not None else ""
-                
-                # Extract rock unit from snippet (customize this pattern as needed)
-                rock_unit = placemark.find('kml:description', ns)
-                rock_unit = rock_unit.text if snippet is not None else ""
-                
-                # LineString handling
-                line_string = placemark.find('.//kml:LineString/kml:coordinates', ns)
-                if line_string is not None:
-                    coords = [list(map(float, c.split(',')[:2])) 
-                            for c in line_string.text.strip().split()]
-                    print(coords)
-                    geom = QgsGeometry.fromPolylineXY([QgsPointXY(x, y) for x, y in coords])
-                    
-                    feat = QgsFeature(line_layer.fields())
-                    feat.setGeometry(geom)
-                    feat.setAttributes([name, snippet, rock_unit])
-                    line_provider.addFeature(feat)
-                
-                # Polygon handling
-                polygon = placemark.find('.//kml:Polygon/kml:outerBoundaryIs/kml:LinearRing/kml:coordinates', ns)
-                if polygon is not None:
-                    coords = [list(map(float, c.split(',')[:2])) 
-                            for c in polygon.text.strip().split()]
-                    print(coords)
-                    geom = QgsGeometry.fromPolygonXY([[QgsPointXY(x, y) for x, y in coords]])
-                    
-                    feat = QgsFeature(poly_layer.fields())
-                    feat.setGeometry(geom)
-                    feat.setAttributes([name, snippet, rock_unit])
-                    poly_provider.addFeature(feat)
-
-            # Add layers to project
-            root.addMapLayer(line_layer)#, False)
-            root.addMapLayer(poly_layer)#, False)
-            
-            # Cleanup
-            os.remove(kmz_path)
-            os.rmdir(temp_dir)
-        except Exception as e:
-            QMessageBox.warning(None, "Error", f"Error loading KMZ: {str(e)}")
-
-    
