@@ -402,7 +402,7 @@ class FieldMoveProjectImporter:
             fields.append(QgsField("opacity", QVariant.Double))
             fields.append(QgsField("style", QVariant.String))
             fields.append(QgsField("filled", QVariant.Int))
-            fields.append(QgsField("timedate", QVariant.String))
+            fields.append(QgsField("timedate", QVariant.DateTime))
             fields.append(QgsField("notes", QVariant.String))
             provider.addAttributes(fields)
             layer.updateFields()
@@ -427,7 +427,7 @@ class FieldMoveProjectImporter:
                     float(attr_data.get('opacity', 1)),
                     attr_data.get('style', 'solid'),
                     int(attr_data.get('filled', 1)),
-                    attr_data.get('timedate', ''),
+                    self._parse_datetime(attr_data.get('timedate', '')).toString(Qt.ISODate),
                     attr_data.get('notes', '')
                 ])
                 
@@ -450,13 +450,12 @@ class FieldMoveProjectImporter:
             if gpkg_layer.isValid():
                 # For polyline try to join with rock-units.csv
                 self._join_rock_units(gpkg_layer, os.path.dirname(csv_path))
-                
                 self._style_layer(gpkg_layer, layer_name)
                 QgsProject.instance().addMapLayer(gpkg_layer, False)
 
             # After creating gpkg_layer:
             if gpkg_layer.isValid():
-                self._style_layer(gpkg_layer, layer_name)
+                self._style_line_layer(gpkg_layer, layer_name)
                 QgsProject.instance().addMapLayer(gpkg_layer, False)
                 group.addLayer(gpkg_layer)
 
@@ -869,76 +868,74 @@ class FieldMoveProjectImporter:
                     layer.setRenderer(renderer)
                     layer.triggerRepaint()
                     return   
-                
-            elif layer_name.lower() == 'polyline':
-                default_symbol = QgsLineSymbol.createSimple({'color':'#aaaaaa', 'width':'0.5'})
-    
-                # Initialize rule-based renderer
-                renderer = QgsRuleBasedRenderer(default_symbol)
-                root_rule = renderer.rootRule()
-                
-                # Example 1: Rule based on rockUnit with color from hex attribute
-                rock_units = set()
-                for feat in layer.getFeatures():
-                    rock_units.add(feat['rockUnit'])
-                
-                for unit in rock_units:
-                    # Create a symbol for this rock unit
-                    symbol = QgsLineSymbol.createSimple({})
-                    symbol.setColor(QColor('#333333'))  # Default color if not defined
-                    
-                    # Create rule
-                    rule = root_rule.children()[0].clone()
-                    rule.setLabel(f"Rock Unit: {unit}")
-                    rule.setFilterExpression(f'"rockUnit" = \'{unit}\'')
-                    
-                    # Apply data-defined properties
-                    symbol.symbolLayer(0).setDataDefinedProperty(
-                        QgsSymbolLayer.PropertyStrokeColor,
-                        QgsProperty.fromField('color')  # Uses hex color from attribute
-                    )
-                    symbol.symbolLayer(0).setDataDefinedProperty(
-                        QgsSymbolLayer.PropertyStrokeWidth,
-                        QgsProperty.fromField('thickness')
-                    )
-                    
-                    rule.setSymbol(symbol)
-                    root_rule.appendChild(rule)
-                
-                # Example 2: Rule based on style (solid/dashed/dotted)
-                styles = ['solid', 'dashed', 'dotted']
-                for style in styles:
-                    symbol = QgsLineSymbol.createSimple({})
-                    symbol.symbolLayer(0).setPenStyle(
-                        Qt.SolidLine if style == 'solid' else 
-                        Qt.DashLine if style == 'dashed' else 
-                        Qt.DotLine
-                    )
-                    
-                    rule = root_rule.children()[0].clone()
-                    rule.setLabel(f"Line Style: {style}")
-                    rule.setFilterExpression(f'"style" = \'{style}\'')
-                    rule.setSymbol(symbol)
-                    root_rule.appendChild(rule)
-                
-                # Clear default rule
-                #root_rule.removeChild(0)
-
-                # Apply the renderer
-                layer.setRenderer(renderer)
-                layer.triggerRepaint()
-
-            # Default styling for other layers
-            default_symbol = QgsMarkerSymbol.createSimple({
-                'name': 'square',
-                'color': 'red',
-                'size': '4'
-            })
-            layer.setRenderer(QgsSingleSymbolRenderer(default_symbol))
-            layer.triggerRepaint()
 
         except Exception as e:
             QMessageBox.warning(None, "Error", f"Error styling layer: {str(e)}")
+
+    def _style_line_layer(self, layer, layer_name):
+        """Apply rule-based styling for lines """
+        try:
+            # Create default symbol for ELSE rule
+            else_symbol = QgsLineSymbol.createSimple({
+            'color': '#999999',  # Gray color for unmatched features
+            'width': '0.5',
+            'line_style': 'solid'})
+            
+            # Initialize rule-based renderer
+            renderer = QgsRuleBasedRenderer(else_symbol)
+            root_rule = renderer.rootRule()
+            
+            # Clear existing rules properly
+            for child in root_rule.children():
+                root_rule.removeChild(child)
+            
+            # Get unique categories from your data
+            categories = []
+            for feature in layer.getFeatures():
+                # Create a category for each unique combination you want to style
+                categories.append((
+                    feature['rockUnit'],  # Or use another field for categorization
+                    feature['color'],        # Hex color from attributes
+                    feature['style']         # Line style
+                ))
+            
+            # Remove duplicates
+            unique_categories = list(set(categories))
+            
+            # Create rules for each unique category
+            for cat_name, color, style in unique_categories:
+                # Create symbol
+                symbol = QgsLineSymbol.createSimple({})
+                
+                # Set basic properties
+                symbol.setColor(QColor(color))
+                symbol.setWidth(0.5)
+                
+                # Set line style
+                line_style = Qt.SolidLine
+                if style == 'dashed':
+                    line_style = Qt.DashLine
+                elif style == 'dotted':
+                    line_style = Qt.DotLine
+                symbol.symbolLayer(0).setPenStyle(line_style)
+                
+                # Create rule
+                rule = root_rule.children()[0].clone() if root_rule.children() else root_rule.clone()
+                rule.setLabel(str(cat_name))
+                rule.setFilterExpression(f'"rockUnit" = \'{cat_name}\'')
+                rule.setSymbol(symbol)
+                root_rule.appendChild(rule)
+
+                            
+            # Remove the default rule
+            root_rule.removeChildAt(0)
+        
+            # Apply the renderer
+            layer.setRenderer(renderer)
+            layer.triggerRepaint()
+        except Exception as e:
+            QMessageBox.warning(None, "Error", f"Error styling line layer: {str(e)}")
+
 
     def _configure_map_tips(self, layer, notes_field="notes"):
         """Configure map tips to show notes attribute"""
