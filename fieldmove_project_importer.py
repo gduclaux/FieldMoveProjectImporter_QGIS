@@ -458,6 +458,8 @@ class FieldMoveProjectImporter:
                 self._style_line_layer(gpkg_layer, layer_name)
                 QgsProject.instance().addMapLayer(gpkg_layer, False)
                 group.addLayer(gpkg_layer)
+            
+            self._configure_map_tips(gpkg_layer)
 
         except Exception as e:
             QMessageBox.warning(None, "Error", f"Error processing line CSV: {str(e)}")
@@ -901,6 +903,7 @@ class FieldMoveProjectImporter:
             
             # Remove duplicates
             unique_categories = list(set(categories))
+            print(unique_categories,len(unique_categories))
             
             # Create rules for each unique category
             for cat_name, color, style in unique_categories:
@@ -925,17 +928,12 @@ class FieldMoveProjectImporter:
                 rule.setFilterExpression(f'"rockUnit" = \'{cat_name}\'')
                 rule.setSymbol(symbol)
                 root_rule.appendChild(rule)
-
-                            
-            # Remove the default rule
-            root_rule.removeChildAt(0)
         
             # Apply the renderer
             layer.setRenderer(renderer)
             layer.triggerRepaint()
         except Exception as e:
             QMessageBox.warning(None, "Error", f"Error styling line layer: {str(e)}")
-
 
     def _configure_map_tips(self, layer, notes_field="notes"):
         """Configure map tips to show notes attribute"""
