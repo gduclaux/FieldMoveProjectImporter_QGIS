@@ -8,6 +8,8 @@ A QGIS plugin to help geologists importing [FieldMove](https://www.petex.com/pe-
 
 Save repository to disk as a [zip file](https://github.com/gduclaux/FieldMoveProjectImporter_QGIS/archive/refs/heads/main.zip). Use *QGIS Plugin Manager* to load directly the FieldMoveProjectImporter plugin from zip file. If in doudt about plugin installation from a zip file watch this [short video](https://www.youtube.com/watch?v=AUQouvFyt34). 
 
+_NB: This plugin has been developed and tested on OSX and tested Windows 11 with QGIS 3.40(LTR), if you encounter any issues please report them in the issue tracker providing information about the OS system and the version of QGIS you have been using._
+
 
 ## Usage 
 
@@ -36,9 +38,7 @@ Dip labeling is set for both plane and line features. Labels are displayed when 
 
 
 ## Roadmap
-
-   - This plugin has been tested on OSX and Windows with QGIS 3.40(LTR). 
-   - Improve polyline rendering
+ 
    - Develop a template for generating a fieldbook-like report from all digital data. 
    - Develop an exporter to display and analyse structural measurements in Allmendinger Stereonet software.
 
