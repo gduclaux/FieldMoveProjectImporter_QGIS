@@ -670,14 +670,22 @@ class FieldMoveProjectImporter:
                         planetype = str(feature[planetype_field]).strip()
                         color = str(feature[color_field]).strip()
                         strike = float(feature[strike_field]) if feature[strike_field] else 0
+                        dip = float(feature[dip_field])
                         
                         if all([rockunit, planetype, color]):
                             unique_combos[(rockunit, planetype)] = (color, strike)
+
+                    #order dictionnary so legend items appear aplhabetically
+                    unique_combos = dict(sorted(unique_combos.items()))
 
                     # Create one rule per combination
                     for (rockunit, planetype), (color, strike) in unique_combos.items():
                         # Get appropriate SVG
                         svg_file = svg_mapping.get(planetype.lower(), next((f for f in os.listdir(svg_dir) if f.startswith('201') and f.endswith('.svg')), None))
+                        '''if dip <= 5. :
+                            svg_file = next((f for f in os.listdir(svg_dir) if f.startswith('204') and f.endswith('.svg')), None)
+                        elif dip >= 85 :
+                            svg_file = next((f for f in os.listdir(svg_dir) if f.startswith('203') and f.endswith('.svg')), None)'''
                         svg_path = os.path.join(self.plugin_dir, 'SVG', 'RHRule_strike', svg_file)
 
                         # Create rule
@@ -761,11 +769,14 @@ class FieldMoveProjectImporter:
                         # Get unique combinations for rules
                         unique_data = {}
                         for feature in layer.getFeatures():
-                            rockunit = str(feature[rockunit_field]).strip()
-                            lineationtype = str(feature[lineationtype_field]).strip()
+                            rockunit = str(feature[rockunit_field])#.strip()
+                            lineationtype = str(feature[lineationtype_field])#.strip()
                             color = str(feature[color_field]).strip()
                             if all([rockunit, lineationtype, color]):
                                 unique_data[(rockunit, lineationtype)] = color
+                        
+                        #order dictionnary so legend items appear aplhabetically
+                        unique_data = dict(sorted(unique_data.items()))
 
                         # Create rules
                         for (rockunit, lineationtype), color in unique_data.items():
@@ -901,9 +912,12 @@ class FieldMoveProjectImporter:
                     feature['style']         # Line style
                 ))
             
+
+            sorted_categories = sorted(categories, key=lambda x: x[0].lower())
+                                
             # Remove duplicates
             unique_categories = list(set(categories))
-            print(unique_categories,len(unique_categories))
+            unique_categories = sorted(unique_categories, key=lambda x: x[0].lower())
             
             # Create rules for each unique category
             for cat_name, color, style in unique_categories:

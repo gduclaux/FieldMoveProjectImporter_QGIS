@@ -36,6 +36,10 @@ If you activate the **show Map Tips** feature <img width="120" alt="image" src="
 ### Dip labeling
 Dip labeling is set for both plane and line features. Labels are displayed when the zoom level (_scale_) of the map Canvas is larger than 1:300,000.
 
+## Symbology limitations
+   - Planar structures symbologies are not as detailed as it might be in your project. Different symbologies are applied onl to _fault_, _joint_ and _cleavage_ plane types. All other planar measurements are represented with the defaut _bedding_ symbol. The bedding symbol isn't changing as a function of the dip angle either.
+   - All lineation types are displayed using a simple arrow symbology with the arrow shaft base located on the spatial reference point.
+   - Symbology can be updated and improved using a rule-based method in QGIS.
 
 ## Roadmap
  
