@@ -1,5 +1,5 @@
 # FieldMoveProjectImporter_QGIS
-A QGIS plugin to help geologists importing [FieldMove](https://www.petex.com/pe-geology/move-suite/digital-field-mapping/) project features into QGIS. FieldMove free digital mapping app available for iPadOS and Android. 
+A QGIS plugin to help geologists importing [FieldMove](https://www.petex.com/pe-geology/move-suite/digital-field-mapping/) project features into QGIS. FieldMove is a free digital mapping app available for iPad and Android tablets. 
 
 (ctrl + click on the link to access latest template): [![DOI](https://zenodo.org/badge/957117869.svg)](https://doi.org/10.5281/zenodo.15133449)
 
@@ -14,7 +14,7 @@ _NB: This plugin has been developed and tested on OSX and tested Windows 11 with
 ## Usage 
 
 ### Prerequisites
-From your tablet you can extract a FieldMove project in various format. I recommend you export in CSV format and copy the whole folder from your tablet to a dekstop computer. Store the **CSV project folder** (typically projectX.fm) in a convenient location in your local machine. It should also work for CSV folder generated and exported from FielMove_Clino, the mobile phone app version of FieldMove.
+From your tablet you can extract a FieldMove project in various format. I recommend you export in CSV format and copy the whole folder from your tablet to a dekstop computer. Store the **CSV project folder** (typically projectX.fm) in a convenient location in your local machine. _It should also work for CSV folder generated and exported from FieldMove-Clino, the mobile phone app version of FieldMove._
 
 ### FieldMove Project Importer plugin
 After installation the plugin is avaliable from the plugin menu, or directly in the toolbar if the *Plugins Toolbar* is activated. Simply press the plugin button and provide the path to the CSV project folder then click **import**.
