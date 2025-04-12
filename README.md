@@ -14,7 +14,7 @@ _NB: This plugin has been developed and tested on OSX and tested Windows 11 with
 ## Usage 
 
 ### Prerequisites
-From your tablet you can extract a FieldMove project in various format. I recommend you export in CSV format and copy the whole folder from your tablet to a dekstop computer. Store the **CSV project folder** (typically projectX.fm) in a convenient location in your local machine. 
+From your tablet you can extract a FieldMove project in various format. I recommend you export in CSV format and copy the whole folder from your tablet to a dekstop computer. Store the **CSV project folder** (typically projectX.fm) in a convenient location in your local machine. It should also work for CSV folder generated and exported from FielMove_Clino, the mobile phone app version of FieldMove.
 
 ### FieldMove Project Importer plugin
 After installation the plugin is avaliable from the plugin menu, or directly in the toolbar if the *Plugins Toolbar* is activated. Simply press the plugin button and provide the path to the CSV project folder then click **import**.
@@ -37,8 +37,9 @@ If you activate the **show Map Tips** feature <img width="120" alt="image" src="
 Dip labeling is set for both plane and line features. Labels are displayed when the zoom level (_scale_) of the map Canvas is larger than 1:300,000.
 
 ## Symbology limitations
-   - Planar structures symbologies are not as detailed as it might be in your project. Different symbologies are applied onl to _fault_, _joint_ and _cleavage_ plane types. All other planar measurements are represented with the defaut _bedding_ symbol. The bedding symbol isn't changing as a function of the dip angle either.
-   - All lineation types are displayed using a simple arrow symbology with the arrow shaft base located on the spatial reference point.
+   - Symbol colors are set to match those imposed in your project for the different rock units.
+   - Planar structures symbologies are not as detailed as it might be in your project. Different symbologies are applied to _fault_, _joint_ and _cleavage_ plane types. All other planar measurements are represented with the defaut _bedding_ symbol. The bedding symbol isn't changing as a function of the dip angle either.
+   - All lineation types are displayed using a simple arrow symbology with the arrow shaft base located on the spatial reference point of the measurement.
    - Symbology can be updated and improved using a rule-based method in QGIS.
 
 ## Roadmap
