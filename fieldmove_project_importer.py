@@ -515,9 +515,7 @@ class FieldMoveProjectImporter:
                     for _ in range(6):  # skip the first 6 rows
                         next(reader)
                     for row in reader:
-                        #print(row)
                         rock_unit_colors[row['name'].strip().lower()] = row['color'].strip()
-                        #print(rock_unit_colors)
 
             if not rock_unit_colors:
                 return False
@@ -548,7 +546,6 @@ class FieldMoveProjectImporter:
                 rockunit_value = feature[rockunit_field]
                 if rockunit_value:
                     rockunit_key = str(rockunit_value).strip().lower()
-                    print(rockunit_key)
                     color = rock_unit_colors.get(rockunit_key, '')
                     if color:
                         layer.changeAttributeValue(feature.id(), 
