@@ -492,17 +492,32 @@ class FieldMoveProjectImporter:
         """Join rock units information from rock-units.csv to the layer and transfer color to new field"""
         try:
             rock_units_path = os.path.join(project_dir, "rock-units.csv")
+            clino = False
             if not os.path.exists(rock_units_path):
-                return False
+                #check if the data comes from FieldMove Clino, then the color codes are in stratcolumn.csv
+                rock_units_path = os.path.join(project_dir, "stratcolumn.csv")
+                clino = True
+                if not os.path.exists(rock_units_path):
+                    return False
 
             # Read rock-units.csv to create a mapping dictionary
             rock_unit_colors = {}
             with open(rock_units_path, 'r') as f:
-                # Read CSV with stripped whitespace from headers
-                reader = csv.DictReader(f, skipinitialspace=True)
-                for row in reader:
-                    if 'name' in row and 'color' in row:
+                if clino is False:
+                    # Read CSV with stripped whitespace from headers
+                    reader = csv.DictReader(f, skipinitialspace=True)
+                    for row in reader:
+                        if 'name' in row and 'color' in row:
+                            rock_unit_colors[row['name'].strip().lower()] = row['color'].strip()
+                else:
+                    # Read CSV with stripped whitespace from headers
+                    reader = csv.DictReader(f, skipinitialspace=True, fieldnames=['name','color','rock_type','age', 'thickness', 'horizonid'])
+                    for _ in range(6):  # skip the first 6 rows
+                        next(reader)
+                    for row in reader:
+                        #print(row)
                         rock_unit_colors[row['name'].strip().lower()] = row['color'].strip()
+                        #print(rock_unit_colors)
 
             if not rock_unit_colors:
                 return False
@@ -510,7 +525,7 @@ class FieldMoveProjectImporter:
             # Find the rockunit field in our layer (case insensitive)
             rockunit_field = None
             for field in layer.fields():
-                if field.name().lower() in ['rockunit', ' rockunit']:
+                if field.name().lower() in ['rockunit', ' rockunit', 'unitid']:
                     rockunit_field = field.name()
                     break
 
@@ -533,6 +548,7 @@ class FieldMoveProjectImporter:
                 rockunit_value = feature[rockunit_field]
                 if rockunit_value:
                     rockunit_key = str(rockunit_value).strip().lower()
+                    print(rockunit_key)
                     color = rock_unit_colors.get(rockunit_key, '')
                     if color:
                         layer.changeAttributeValue(feature.id(), 
@@ -639,7 +655,7 @@ class FieldMoveProjectImporter:
                 color_field = next((f.name() for f in layer.fields() 
                                 if f.name().strip().lower() == 'color'), None)
                 rockunit_field = next((f.name() for f in layer.fields() 
-                                    if f.name().strip().lower() in ['rockunit', 'rock-unit']), None)
+                                    if f.name().strip().lower() in ['rockunit', 'rock-unit','unitid']), None)
                 planetype_field = next((f.name() for f in layer.fields() 
                                     if f.name().strip().lower() in ['planetype', 'type']), None)
                 strike_field = next((f.name() for f in layer.fields() 
@@ -733,7 +749,7 @@ class FieldMoveProjectImporter:
                 color_field = next((f.name() for f in layer.fields() 
                                 if f.name().strip().lower() == 'color'), None)
                 rockunit_field = next((f.name() for f in layer.fields() 
-                                    if f.name().strip().lower() in ['rockunit', 'rock-unit']), None)
+                                    if f.name().strip().lower() in ['rockunit', 'rock-unit','unitid']), None)
                 lineationtype_field = next((f.name() for f in layer.fields() 
                                     if f.name().strip().lower() in ['lineationtype', 'type']), None)
                 plungeazimuth_field = next((f.name() for f in layer.fields() 
