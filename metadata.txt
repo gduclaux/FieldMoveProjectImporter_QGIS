@@ -5,8 +5,8 @@
 [general]
 name=FieldMove Project Importer
 qgisMinimumVersion=3.4
-description=This plugins consolidate FieldMove project files into a QGIS project
-version=0.1
+description=This plugin consolidates FieldMove project files into a QGIS project
+version=0.2
 author=Guillaume Duclaux, Université Côte d'Azur
 email=guillaume.duclaux@univ-cotedazur.fr
 
