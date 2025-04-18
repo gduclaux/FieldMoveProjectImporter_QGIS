@@ -35,11 +35,11 @@ If you activate the **show Map Tips** feature <img width="120" alt="image" src="
   <img width="818" alt="image" src="https://github.com/user-attachments/assets/a76e5de3-1e52-4fc6-b9f8-ac6fcc76525e" />
 </p>
 
-### Dip labeling
-Dip labeling is set for both plane and line features. Labels are displayed when the zoom level (_scale_) of the map Canvas is larger than 1:300,000.
+### Dip/plunge labeling
+Dip (or plunge) labeling is set for both plane and line features. Labels are displayed when the zoom level (_scale_) of the map Canvas is larger than 1:300,000. This can be changed in the layer properties panel (Control feature labeling > Rendering > Scale dependent visibility).
 
 ## Symbology limitations
-   - Symbol colors are set to match those imposed in your project for the different rock units.
+   - Symbol colors are set to match those imposed in the original FieldMove project for the different rock units.
    - Planar structures symbologies are not as detailed as it might be in your project. Different symbologies are applied to _fault_, _joint_ and _cleavage_ plane types. All other planar measurements are represented with the defaut _bedding_ symbol. The bedding symbol isn't changing as a function of the dip angle either.
    - All lineation types are displayed using a simple arrow symbology with the arrow shaft base located on the spatial reference point of the measurement.
    - Symbology can be updated and improved using a rule-based method in QGIS.
@@ -47,9 +47,9 @@ Dip labeling is set for both plane and line features. Labels are displayed when 
 ## Roadmap
  
    - Develop a template for generating a fieldbook-like report from all digital data. 
-   - Develop an exporter to display and analyse structural measurements in Allmendinger Stereonet software.
+   - Develop an exporter to display and analyse structural measurements in Allmendinger' Stereonet software.
 
 ## Credits
-   - Plugin construction and manual - Guillaume Duclaux, using QGIS Plugin Builder Plugin & DeepSeek
+   - Plugin construction and manual: Guillaume Duclaux, using QGIS Plugin Builder Plugin & DeepSeek 
    - SVG symbols for geological fabrics are from Rod Holcombe [geoqsymbol page](https://www.holcombe.net.au/software/geoqsymbol.html#download)
-   - If you find this plugin useful for your research please cite this plugin using Zenodo DOI [![DOI](https://zenodo.org/badge/957117869.svg)](https://doi.org/10.5281/zenodo.15133449)
+   - If you find this plugin useful for your research please cite this plugin using its Zenodo DOI [![DOI](https://zenodo.org/badge/957117869.svg)](https://doi.org/10.5281/zenodo.15133449)
