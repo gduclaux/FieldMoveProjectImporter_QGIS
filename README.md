@@ -6,7 +6,7 @@ A QGIS plugin to help geologists importing [FieldMove](https://www.petex.com/pe-
 
 ## Install
 
-The **FieldMoveProjectImporter** plugin can be installed directly from *QGIS Plugins manager*. Make sure _show also experimental plugins_ is selected in the Plugins Manager's settings. 
+The **FieldMoveProjectImporter** plugin can be installed directly from *QGIS Plugins Manager*. Make sure _show also experimental plugins_ is selected in the Plugins Manager's settings. 
 
 Alternatively, or if you'd like the latest version you can save this repository to disk as a [zip file](https://github.com/gduclaux/FieldMoveProjectImporter_QGIS/archive/refs/heads/main.zip). Use *QGIS Plugins Manager* to load directly the FieldMoveProjectImporter plugin from zip file. If in doudt about plugin installation from a zip file watch this [short video](https://www.youtube.com/watch?v=AUQouvFyt34). 
 
@@ -32,8 +32,10 @@ The plugin will generate a new Group (the group name is concatenation of "FieldM
 ### Map Tips for features and images
 If you activate the **show Map Tips** feature <img width="120" alt="image" src="https://github.com/user-attachments/assets/08acd5ed-1586-4a81-8642-24436a3218b5"/>, then select a layer in the LayersTree and move you mouse over a feature from this active layer QGIS will display the notes recorded in a text box. If you select **image** in the LayersTree you should see a preview of the photograph with any annotations you might have drawn on the image.
 <p align="center">
-  <img width="818" alt="image" src="https://github.com/user-attachments/assets/a76e5de3-1e52-4fc6-b9f8-ac6fcc76525e" />
+  <img width="818" alt="image" src="https://github.com/user-attachments/assets/af5ff2ab-ca3c-434e-8db3-8211eb1d5edc" />
 </p>
+
+
 
 ### Dip/plunge labeling
 Dip (or plunge) labeling is set for both plane and line features. Labels are displayed when the zoom level (_scale_) of the map Canvas is larger than 1:300,000. This can be changed in the layer properties panel (Control feature labeling > Rendering > Scale dependent visibility).
