@@ -30,7 +30,7 @@ The plugin converts the CSV files to individual GeoPackages stored in the CSV Pr
 The plugin will generate a new Group (the group name is concatenation of "FieldMoveImport_" and your CSV project folder name - also the project id in FieldMove) in QGIS LayersTree, and load and display the imported point layers as well as any basemap imagery you might have in your project. Polygons and line drawings are not yet supported. 
 
 ### Map Tips for features and images
-If you activate the **show Map Tips** feature <img width="120" alt="image" src="https://github.com/user-attachments/assets/08acd5ed-1586-4a81-8642-24436a3218b5"/>, then select a layer in the LayersTree and move you mouse over a feature from this active layer QGIS will display the notes recorded in a text box. If you select **image** in the LayersTree you should see a preview of the photograph with any annotations you might have drawn on the image.
+If you activate the **show Map Tips** <img width="120" alt="image" src="https://github.com/user-attachments/assets/08acd5ed-1586-4a81-8642-24436a3218b5"/>, then select a layer in the LayersTree and move you mouse over a feature (i.e. a plane, a line, a locality or a note) from this active layer QGIS will display the information available in a pop-up box. If you select **image** in the LayersTree you should see a preview of the photograph (including any annotations you might have drawn onto it) with its heading and notes.
 
 <p align="center">
   <img width="818" alt="image" src="https://github.com/user-attachments/assets/af5ff2ab-ca3c-434e-8db3-8211eb1d5edc" />
