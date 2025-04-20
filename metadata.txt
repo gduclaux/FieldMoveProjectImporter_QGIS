@@ -10,7 +10,7 @@ version=0.2
 author=Guillaume Duclaux, Université Côte d'Azur
 email=guillaume.duclaux@univ-cotedazur.fr
 
-about=FieldMoveProjectImporter plugins aims to facilitate the import of FieldMove data into a consolidated QGIS project for further visualisation and analysis. Field observations, notes, structural measurements and georeferences images captures with a tablet using FielMove app can alltogether be combined in a QGIS project for exporting a PDF version of your digital fieldbook, and design comprehensive geological maps.
+about=FieldMoveProjectImporter plugins aims to facilitate the import of FieldMove data into a consolidated QGIS project for further visualisation and analysis. Field observations, notes, structural measurements and georeferences images captures with a tablet using FieldMove app can alltogether be combined in a QGIS project for structural analysis, and to prepare comprehensive geological maps.
 
 tracker=https://github.com/gduclaux/FieldMoveProjectImporter_QGIS/issues
 repository=https://github.com/gduclaux/FieldMoveProjectImporter_QGIS
