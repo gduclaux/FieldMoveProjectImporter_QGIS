@@ -46,7 +46,6 @@ from qgis.core import (
     QgsMarkerSymbol,
     QgsLineSymbol,
     QgsMessageLog,
-    QgsSingleSymbolRenderer,
     QgsVectorFileWriter,
     QgsProject,
     QgsRasterLayer,
@@ -89,7 +88,7 @@ class FieldMoveImportDialog(QDialog):
             <li>CSV files (localities, lines, planes, notes, and images)</li>
             <li>Basemaps (geotifs) you might have used for mapping</li>
         </ul>
-        <p>Select the .fm project folder containing your CSV files (and basemaps).</p>
+        <p>Select the .fm project folder containing your CSV files, images (and basemaps).</p>
         """)
         desc.setWordWrap(True)
         layout.addWidget(desc)
@@ -168,7 +167,7 @@ class FieldMoveProjectImporter:
             self.iface.mainWindow()
         )
         self.action.triggered.connect(self.run)  
-        self.action.setWhatsThis("Import FieldMove project data (CSV and KMZ files)")
+        self.action.setWhatsThis("Import FieldMove project data (CSV files, images and basemaps)")
         
         # Add toolbar button and menu item
         self.iface.addToolBarIcon(self.action)
@@ -652,7 +651,7 @@ class FieldMoveProjectImporter:
                 color_field = next((f.name() for f in layer.fields() 
                                 if f.name().strip().lower() == 'color'), None)
                 rockunit_field = next((f.name() for f in layer.fields() 
-                                    if f.name().strip().lower() in ['rockunit', 'rock-unit','unitid']), None)
+                                    if f.name().strip().lower() in ['rockunit', 'rock-unit', 'unitid']), None)
                 planetype_field = next((f.name() for f in layer.fields() 
                                     if f.name().strip().lower() in ['planetype', 'type']), None)
                 strike_field = next((f.name() for f in layer.fields() 
@@ -746,7 +745,7 @@ class FieldMoveProjectImporter:
                 color_field = next((f.name() for f in layer.fields() 
                                 if f.name().strip().lower() == 'color'), None)
                 rockunit_field = next((f.name() for f in layer.fields() 
-                                    if f.name().strip().lower() in ['rockunit', 'rock-unit','unitid']), None)
+                                    if f.name().strip().lower() in ['rockunit', 'rock-unit', 'unitid']), None)
                 lineationtype_field = next((f.name() for f in layer.fields() 
                                     if f.name().strip().lower() in ['lineationtype', 'type']), None)
                 plungeazimuth_field = next((f.name() for f in layer.fields() 
@@ -1028,7 +1027,7 @@ class FieldMoveProjectImporter:
                 return True
             return False
         except Exception as e:
-            QMessageBox.warning(None, "Error", f"Error loading label style: {str(e)}")
+            QMessageBox.warning(None, "Error", f"Error loading plane label style: {str(e)}")
 
     def _apply_label_style_line(self, layer):
         """Apply label style from QML file to plane layer"""
@@ -1043,7 +1042,7 @@ class FieldMoveProjectImporter:
                 return True
             return False
         except Exception as e:
-            QMessageBox.warning(None, "Error", f"Error loading label style: {str(e)}")
+            QMessageBox.warning(None, "Error", f"Error loading line label style: {str(e)}")
 
     def _add_svg_path_to_qgis(self):
         """Add plugin's SVG directory to QGIS SVG paths if not already present"""
