@@ -25,9 +25,9 @@ After installation the plugin is avaliable from the plugin menu, or directly in 
   <img width="420" alt="image" src="https://github.com/user-attachments/assets/c9343426-f786-4a8b-afb4-dbcf25be227c" />
 </p>
 
-The plugin converts the CSV files to individual GeoPackages stored in the CSV Projet foder.
+The plugin converts the CSV files to individual GeoPackages (with a WGS84 assigned coordinate reference system) stored in the original CSV Projet foder.
 
-The plugin will generate a new Group (the group name is concatenation of "FieldMoveImport_" and your CSV project folder name - also the project id in FieldMove) in QGIS LayersTree, and load and display the imported point layers as well as any basemap imagery you might have in your project. Polygons and line drawings are imported as polylines. 
+The plugin will generate a new Group (the group name is concatenation of "FieldMoveImport_" and your CSV project folder name - also the project id in FieldMove) in QGIS LayersTree, and load and display the imported point layers as well as any basemap imagery you might have in your project. Polygons and line drawings are imported as polylines.
 
 <p align="center">
   <img width="950" alt="image" src="https://github.com/user-attachments/assets/c6bb84dd-663e-40ca-a899-e0d5dea5c74b" />
