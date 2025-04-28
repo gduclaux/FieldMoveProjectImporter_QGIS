@@ -941,8 +941,9 @@ class FieldMoveProjectImporter:
                 symbol.setWidth(0.5)
                 
                 # Set line style
-                line_style = Qt.SolidLine
-                if style == 'dashed':
+                if style == 'solid':
+                    line_style = Qt.SolidLine
+                elif style == 'dashed':
                     line_style = Qt.DashLine
                 elif style == 'dotted':
                     line_style = Qt.DotLine
@@ -951,7 +952,8 @@ class FieldMoveProjectImporter:
                 # Create rule
                 rule = root_rule.children()[0].clone() if root_rule.children() else root_rule.clone()
                 rule.setLabel(str(cat_name))
-                rule.setFilterExpression(f'"rockUnit" = \'{cat_name}\'')
+                rule.setFilterExpression(f'"rockUnit" = \'{cat_name}\' AND '
+                                        f'"style" = \'{style}\'')
                 rule.setSymbol(symbol)
                 root_rule.appendChild(rule)
         
