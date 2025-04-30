@@ -171,16 +171,6 @@ class FieldMoveProjectImporter:
         )
         self.action.triggered.connect(self.run)  
         self.action.setWhatsThis("Import FieldMove project data (CSV files, images and basemaps)")
-        
-        '''icon_path = os.path.join(self.plugin_dir, 'stereo.png')
-        self.action = QAction(
-            QIcon(icon_path),
-            "Stereonet Tool",
-            self.iface.mainWindow()
-        )
-        self.action.triggered.connect(StereonetTool.contourPlot) 
-        self.action.setWhatsThis("Visualise structural measurements in stereonet")
-        '''
 
         # Add toolbar button and menu item
         self.iface.addToolBarIcon(self.action)
@@ -735,7 +725,10 @@ class FieldMoveProjectImporter:
                         svg_layer.setAngle(325) #in the legend
                         svg_layer.setDataDefinedProperty(
                             QgsSymbolLayer.PropertyAngle,
-                            QgsProperty.fromExpression(f'"{strike_field}"')
+                            #QgsProperty.fromExpression(f'"{strike_field}"')
+                            QgsProperty.fromExpression(f'COALESCE("{strike_field}"'f",0)+\
+                                                       (degrees(azimuth(transform($geometry,layer_property(@layer_id,'crs'),@map_crs),\
+                                                        transform(make_point(x($geometry),y($geometry)+1),layer_property(@layer_id,'crs'),@map_crs))))")
                         )
                         
                         symbol.changeSymbolLayer(0, svg_layer)
@@ -782,7 +775,10 @@ class FieldMoveProjectImporter:
                         # SET ROTATION EXPRESSION HERE
                         svg_layer.setDataDefinedProperty(
                             QgsSymbolLayer.PropertyAngle,
-                            QgsProperty.fromExpression(f'"{plungeazimuth_field}"')
+                            #QgsProperty.fromExpression(f'"{plungeazimuth_field}"')
+                            QgsProperty.fromExpression(f'COALESCE("{plungeazimuth_field}"'f",0)+\
+                                                       (degrees(azimuth(transform($geometry,layer_property(@layer_id,'crs'),@map_crs),\
+                                                        transform(make_point(x($geometry),y($geometry)+1),layer_property(@layer_id,'crs'),@map_crs))))")
                         )
                         
                         base_symbol.changeSymbolLayer(0, svg_layer)

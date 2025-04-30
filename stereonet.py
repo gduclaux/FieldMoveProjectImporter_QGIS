@@ -36,16 +36,93 @@ from qgis.core import QgsProject
 from math import asin,sin,degrees,radians,cos,tan,atan
 import json
 
+
+class StereonetDialog(QDialog):
+    def __init__(self, plugin_dir, parent=None):
+        super().__init__(parent)
+        self.plugin_dir = plugin_dir
+        self.setWindowTitle("F                                                                             t Importer")
+        self.setWindowIcon(QIcon(os.path.join(plugin_dir, 'stereo.png')))
+        self.setMinimumWidth(400)
+        
+        self.init_ui()
+    
+    def init_ui(self):
+        # Create main layout
+        layout = QVBoxLayout()
+        
+        # Header
+        header = QLabel()
+        header.setPixmap(QPixmap(os.path.join(self.plugin_dir, 'stereo.png')).scaled(64, 64, Qt.KeepAspectRatio))
+        header.setAlignment(Qt.AlignCenter)
+        layout.addWidget(header)
+        
+        # Description
+        desc = QLabel("""
+        <h3>Stereonet Settings</h3>
+        <p>Visualise selected planes and lines data from FieldMove geological data including:</p>
+        <ul>
+            <li>Select data you want to plot in QGIS Map</li>
+            <li>Choose stereonet settings below</li>
+            <li>Data are colored according to the Geologic Unit color</li>
+        </ul>
+        <p>Press Plot.</p>
+        """)
+        desc.setWordWrap(True)
+        layout.addWidget(desc)
+        
+        # Project folder selection
+        folder_layout = QVBoxLayout()
+        folder_label = QLabel("<b>Select FieldMove Project Folder:</b>")
+        self.folder_edit = QLineEdit()
+        self.folder_edit.setPlaceholderText("Path to folder containing CSV files")
+        folder_btn = QPushButton("Browse...")
+        folder_btn.clicked.connect(self.select_folder)
+        
+        folder_layout.addWidget(folder_label)
+        folder_layout.addWidget(self.folder_edit)
+        folder_layout.addWidget(folder_btn)
+        layout.addLayout(folder_layout)
+        
+        # Button box (using QHBoxLayout)
+        btn_box = QHBoxLayout()  # Now properly imported
+        plot_btn = QPushButton("Plot")
+        plot_btn.clicked.connect(self.accept)
+        cancel_btn = QPushButton("Cancel")
+        cancel_btn.clicked.connect(self.reject)
+        
+        btn_box.addWidget(plot_btn)
+        btn_box.addWidget(cancel_btn)
+        layout.addLayout(btn_box)
+        
+        self.setLayout(layout)
+    
+    def select_folder(self):
+        folder = QFileDialog.getExistingDirectory(
+            self, 
+            "Select FieldMove Project Folder", 
+            "", 
+            QFileDialog.ShowDirsOnly
+        )
+        if folder:
+            self.folder_edit.setText(folder)
+    
+    def get_paths(self):
+        return {
+            'project_dir': self.folder_edit.text()
+        }
+
 class StereonetTool:
     def __init__(self, iface):
         self.iface = iface
+        self.plugin_dir = os.path.dirname(__file__)
         self.menu = "&FieldMove Project Importer"
 
     def initGui(self):
         # Add toolbar button and menu item
         dir_path = os.path.dirname(__file__)
         self.action = QAction(QIcon(os.path.join(dir_path, "stereo.png")), u'Stereonet Tool', self.iface.mainWindow())
-        self.action.triggered.connect(self.contourPlot)
+        self.action.triggered.connect(self.run)
         self.iface.addToolBarIcon(self.action)
         self.iface.addPluginToMenu(self.menu, self.action)
 
@@ -53,6 +130,16 @@ class StereonetTool:
         self.iface.removeToolBarIcon(self.action)
         self.iface.removePluginMenu(self.menu, action)
         del self.action
+
+
+    def run(self):
+        dlg = StereonetDialog(self.plugin_dir, self.iface.mainWindow())
+        if not dlg.exec_():  # User cancelled
+            return
+        
+        stereoConfig={'showGtCircles':False,'showContours':True,'linPlanes':True,'roseDiagram':False}
+        
+        self.contourPlot(stereoConfig)
 
     def rose_diagram(self,strikes,title):
         #modified from: http://geologyandpython.com/structural_geology.html
@@ -64,13 +151,6 @@ class StereonetTool:
         two_halves = np.concatenate([half, half])
         fig = plt.figure(figsize=(8,8))
 
-        """ax = fig.add_subplot(121, projection='stereonet')
-
-        ax.pole(strikes, dips, c='k', label='Pole of the Planes')
-        ax.density_contourf(strikes, dips, measurement='poles', cmap='Reds')
-        ax.set_title('Density coutour of the Poles', y=1.10, fontsize=15)
-        ax.grid()"""
-
         ax = fig.add_subplot(111, projection='polar')
 
         ax.bar(np.deg2rad(np.arange(0, 360, 10)), two_halves, 
@@ -78,14 +158,13 @@ class StereonetTool:
         ax.set_theta_zero_location('N')
         ax.set_theta_direction(-1)
         ax.set_thetagrids(np.arange(0, 360, 10), labels=np.arange(0, 360, 10))
-        ax.set_rgrids(np.arange(1, two_halves.max() + 1, 2), angle=0, weight= 'black')
+        ax.set_rgrids(np.arange(1, two_halves.max() * 1.1, 2), angle=0, weight= 'black')
         ax.set_title(title)
 
         fig.tight_layout()
         plt.show()
         
-    def contourPlot(self):
-        print("Stereonet button clicked!")  # Check QGIS log for this message
+    def contourPlot(self,stereoConfig):
         sname='strike'
         dname='dip'
         aname='plungeAzimuth'
@@ -150,7 +229,7 @@ class StereonetTool:
             ax.set_azimuth_ticklabels(['000\u00b0','030\u00b0','060\u00b0','090\u00b0','120\u00b0','150\u00b0','180\u00b0','210\u00b0','240\u00b0','270\u00b0','300\u00b0','330\u00b0'])
             ax.grid(kind='equal_area_stereonet')
             if(stereoConfig['showContours']):
-                ax.density_contour(strikes, dips, measurement='poles',cmap=cm.coolwarm,method='exponential_kamb',sigma=1.5,linewidths =0.5)
+                ax.density_contour(strikes, dips, measurement='poles',cmap=cm.viridis,method='exponential_kamb',sigma=2.,linewidths =0.5)
             if(stereoConfig['showGtCircles'] and strikeExists != -1 and colorExists != -1):
                 for color in enumerate(colors):
                     ax.plane(strikes[color[0]], dips[color[0]], color=color[1], linewidth=1)
