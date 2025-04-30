@@ -728,7 +728,7 @@ class FieldMoveProjectImporter:
                             #QgsProperty.fromExpression(f'"{strike_field}"')
                             QgsProperty.fromExpression(f'COALESCE("{strike_field}"'f",0)+\
                                                        (degrees(azimuth(transform($geometry,layer_property(@layer_id,'crs'),@map_crs),\
-                                                        transform(make_point(x($geometry),y($geometry)+1),layer_property(@layer_id,'crs'),@map_crs))))")
+                                                        transform(make_point(x($geometry),y($geometry)+0.0001),layer_property(@layer_id,'crs'),@map_crs))))")
                         )
                         
                         symbol.changeSymbolLayer(0, svg_layer)
@@ -778,7 +778,7 @@ class FieldMoveProjectImporter:
                             #QgsProperty.fromExpression(f'"{plungeazimuth_field}"')
                             QgsProperty.fromExpression(f'COALESCE("{plungeazimuth_field}"'f",0)+\
                                                        (degrees(azimuth(transform($geometry,layer_property(@layer_id,'crs'),@map_crs),\
-                                                        transform(make_point(x($geometry),y($geometry)+1),layer_property(@layer_id,'crs'),@map_crs))))")
+                                                        transform(make_point(x($geometry),y($geometry)+0.0001),layer_property(@layer_id,'crs'),@map_crs))))")
                         )
                         
                         base_symbol.changeSymbolLayer(0, svg_layer)
