@@ -24,6 +24,13 @@
  ***************************************************************************/
  This script initializes the plugin, making it known to QGIS.
 """
+import os
+import sys
+
+sys.path.append(f'{os.path.dirname(__file__)}/mplstereonet')
+
+from .stereonet import StereonetTool
+  
 
 # noinspection PyPep8Naming
 def classFactory(iface):  # pylint: disable=invalid-name
@@ -32,6 +39,12 @@ def classFactory(iface):  # pylint: disable=invalid-name
     :param iface: A QGIS interface instance.
     :type iface: QgsInterface
     """
-    #
+    
     from .fieldmove_project_importer import FieldMoveProjectImporter
-    return FieldMoveProjectImporter(iface)
+    plugin = FieldMoveProjectImporter(iface)
+    
+    # Add stereonet tool
+    plugin.stereonet = StereonetTool(iface)
+    plugin.stereonet.initGui()
+    
+    return plugin

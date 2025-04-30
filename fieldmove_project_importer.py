@@ -23,6 +23,9 @@
  *                                                                         *
  ***************************************************************************/
 """
+
+from .stereonet import StereonetTool
+
 import os
 import csv
 from datetime import datetime
@@ -169,6 +172,16 @@ class FieldMoveProjectImporter:
         self.action.triggered.connect(self.run)  
         self.action.setWhatsThis("Import FieldMove project data (CSV files, images and basemaps)")
         
+        '''icon_path = os.path.join(self.plugin_dir, 'stereo.png')
+        self.action = QAction(
+            QIcon(icon_path),
+            "Stereonet Tool",
+            self.iface.mainWindow()
+        )
+        self.action.triggered.connect(StereonetTool.contourPlot) 
+        self.action.setWhatsThis("Visualise structural measurements in stereonet")
+        '''
+
         # Add toolbar button and menu item
         self.iface.addToolBarIcon(self.action)
         self.iface.addPluginToMenu(self.menu, self.action)
