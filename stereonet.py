@@ -251,7 +251,7 @@ class StereonetTool:
         number_of_strikes[0] += number_of_strikes[-1]
         half = np.sum(np.split(number_of_strikes[:-1], 2), 0)
         two_halves = np.concatenate([half, half])
-        fig = plt.figure(figsize=(6,6))
+        fig = plt.figure(figsize=(6.5,4.8))
 
         ax = fig.add_subplot(111, projection='polar')
 
@@ -259,8 +259,8 @@ class StereonetTool:
             width=np.deg2rad(10), bottom=0.0, color='.8', edgecolor='k', linewidth='0.5')
         ax.set_theta_zero_location('N')
         ax.set_theta_direction(-1)
-        ax.set_thetagrids(np.arange(0, 360, 30), labels=np.arange(0, 360, 30))
-        ax.set_rgrids(np.arange(1, two_halves.max() * 1.1, max(1,two_halves.max()//3)), angle=0, fontsize=8)
+        ax.set_thetagrids(np.arange(0, 360, 30), labels=[f"{angle:03d}\u00b0" for angle in np.arange(0, 360, 30)])
+        ax.set_rgrids(np.arange(1, two_halves.max() * 1.1, max(1,two_halves.max()//3)), angle=180, fontsize=8)
         ax.set_title(title)
         ax.grid(True, linewidth='0.1', linestyle='--')
 
