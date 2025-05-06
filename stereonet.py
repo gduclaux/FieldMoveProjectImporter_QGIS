@@ -40,12 +40,17 @@ import json
 class StereonetDialog(QDialog):
     def __init__(self, plugin_dir, parent=None):
         super().__init__(parent)
+        self.settings = QgsSettings()
         self.plugin_dir = plugin_dir
-        self.setWindowTitle("F                                                                             t Importer")
+        self.setWindowTitle("FieldMove Importer Stereonet Viewer")
         self.setWindowIcon(QIcon(os.path.join(plugin_dir, 'stereo.png')))
         self.setMinimumWidth(400)
-        
+        # Initialize with default values or saved values
+        self.stereoConfig = self.load_settings()
+        self.output_folder = self.settings.value("stereonet_plugin/output_folder", "")
+
         self.init_ui()
+        self.restore_settings()
     
     def init_ui(self):
         # Create main layout
@@ -53,29 +58,77 @@ class StereonetDialog(QDialog):
         
         # Header
         header = QLabel()
-        header.setPixmap(QPixmap(os.path.join(self.plugin_dir, 'stereo.png')).scaled(64, 64, Qt.KeepAspectRatio))
+        header.setPixmap(QPixmap(os.path.join(self.plugin_dir, 'stereo.png')).scaled(48, 48, Qt.KeepAspectRatio))
         header.setAlignment(Qt.AlignCenter)
+        
         layout.addWidget(header)
         
         # Description
         desc = QLabel("""
         <h3>Stereonet Settings</h3>
-        <p>Visualise selected planes and lines data from FieldMove geological data including:</p>
+        <p>Visualise selected planes and lines from imported FieldMove project:</p>
         <ul>
-            <li>Select data you want to plot in QGIS Map</li>
+            <li>Select data (either planes or lines) you want to plot in QGIS Map</li>
             <li>Choose stereonet settings below</li>
-            <li>Data are colored according to the Geologic Unit color</li>
+            <li>(optional) Select output file name for export to CSV</li>
         </ul>
-        <p>Press Plot.</p>
-        """)
+        <p>Data are coloured according to the Geologic Unit colour set in the original project. The stereonet is an equal area projection, lower hemisphere. </p>""")
         desc.setWordWrap(True)
         layout.addWidget(desc)
         
+        #boxes for options selection
+         # Horizontal line separator
+        line0 = QFrame()
+        line0.setFrameShape(QFrame.HLine)
+        line0.setFrameShadow(QFrame.Sunken)
+        layout.addWidget(line0)
+        # Create checkboxes with separators
+
+        # Option 1 - planes or lines: contouring
+        desc=QLabel("""<h4>Contouring display option</h4>""")
+        layout.addWidget(desc)
+        self.contours_cb = QCheckBox("Show Contours")
+        layout.addWidget(self.contours_cb)
+        
+        # Add horizontal line after Option 1
+        line1 = QFrame()
+        line1.setFrameShape(QFrame.HLine)
+        line1.setFrameShadow(QFrame.Sunken)
+        layout.addWidget(line1)
+        desc=QLabel("""<h4>Planes display options</h4>""")
+        layout.addWidget(desc)
+
+        # Option 2 - Planes: plot great circles
+        self.gt_circles_cb = QCheckBox("Show Great Circles")
+        layout.addWidget(self.gt_circles_cb)
+        
+        # Option 3 - Planes: plot poles
+        self.lin_planes_cb = QCheckBox("Show Poles")
+        layout.addWidget(self.lin_planes_cb)
+        
+        # Add horizontal line after Option 3
+        line2 = QFrame()
+        line2.setFrameShape(QFrame.HLine)
+        line2.setFrameShadow(QFrame.Sunken)
+        layout.addWidget(line2)
+        desc=QLabel("""<h4>Rose diagram option</h4>
+                    <p>if selected individual planes or lines, or their contours won't be displayed</p>""")
+        layout.addWidget(desc)
+        
+        # Option 4 - Rose Diagram
+        self.rose_diagram_cb = QCheckBox("Rose Diagram")
+        layout.addWidget(self.rose_diagram_cb)
+        
+        # Add horizontal line after Option 3
+        line3 = QFrame()
+        line3.setFrameShape(QFrame.HLine)
+        line3.setFrameShadow(QFrame.Sunken)
+        layout.addWidget(line3)
         # Project folder selection
         folder_layout = QVBoxLayout()
-        folder_label = QLabel("<b>Select FieldMove Project Folder:</b>")
+        folder_label = QLabel("<h4>Select CSV file path for export:</h4>")
         self.folder_edit = QLineEdit()
-        self.folder_edit.setPlaceholderText("Path to folder containing CSV files")
+        self.folder_edit.setPlaceholderText("Path to export the CSV file")
         folder_btn = QPushButton("Browse...")
         folder_btn.clicked.connect(self.select_folder)
         
@@ -88,10 +141,13 @@ class StereonetDialog(QDialog):
         btn_box = QHBoxLayout()  # Now properly imported
         plot_btn = QPushButton("Plot")
         plot_btn.clicked.connect(self.accept)
+        export_btn = QPushButton("Export")
+        export_btn.clicked.connect(self.accept)
         cancel_btn = QPushButton("Cancel")
         cancel_btn.clicked.connect(self.reject)
         
         btn_box.addWidget(plot_btn)
+        btn_box.addWidget(export_btn)
         btn_box.addWidget(cancel_btn)
         layout.addLayout(btn_box)
         
@@ -107,10 +163,54 @@ class StereonetDialog(QDialog):
         if folder:
             self.folder_edit.setText(folder)
     
-    def get_paths(self):
-        return {
-            'project_dir': self.folder_edit.text()
+    def get_configuration(self):
+        """Returns the stereoConfig dictionary and output folder path"""
+        self.stereoConfig = {
+            'showGtCircles': self.gt_circles_cb.isChecked(),
+            'showContours': self.contours_cb.isChecked(),
+            'linPlanes': self.lin_planes_cb.isChecked(),
+            'roseDiagram': self.rose_diagram_cb.isChecked()
         }
+        
+        return self.stereoConfig, self.output_folder
+    
+    def save_settings(self):
+        """Save current settings to QgsSettings"""
+        config, folder = self.get_configuration()
+        
+        # Save checkbox states
+        self.settings.setValue("stereonet_plugin/showGtCircles", config['showGtCircles'])
+        self.settings.setValue("stereonet_plugin/showContours", config['showContours'])
+        self.settings.setValue("stereonet_plugin/linPlanes", config['linPlanes'])
+        self.settings.setValue("stereonet_plugin/roseDiagram", config['roseDiagram'])
+        
+        # Save output folder
+        self.settings.setValue("stereonet_plugin/output_folder", folder)
+    
+    def load_settings(self):
+        """Load settings from QgsSettings"""
+        return {
+            'showGtCircles': self.settings.value("stereonet_plugin/showGtCircles", True, type=bool),
+            'showContours': self.settings.value("stereonet_plugin/showContours", False, type=bool),
+            'linPlanes': self.settings.value("stereonet_plugin/linPlanes", False, type=bool),
+            'roseDiagram': self.settings.value("stereonet_plugin/roseDiagram", False, type=bool)
+        }
+    
+    def restore_settings(self):
+        """Restore checkbox states from saved settings"""
+        self.gt_circles_cb.setChecked(self.stereoConfig['showGtCircles'])
+        self.contours_cb.setChecked(self.stereoConfig['showContours'])
+        self.lin_planes_cb.setChecked(self.stereoConfig['linPlanes'])
+        self.rose_diagram_cb.setChecked(self.stereoConfig['roseDiagram'])
+        
+        if self.output_folder:
+            self.folder_label.setText(self.output_folder)
+    
+    def accept(self):
+        """Override accept to save settings before closing"""
+        self.save_settings()
+        super().accept()
+        
 
 class StereonetTool:
     def __init__(self, iface):
@@ -136,8 +236,10 @@ class StereonetTool:
         dlg = StereonetDialog(self.plugin_dir, self.iface.mainWindow())
         if not dlg.exec_():  # User cancelled
             return
+        else:
+            stereoConfig, output_folder = dlg.get_configuration()
         
-        stereoConfig={'showGtCircles':False,'showContours':True,'linPlanes':True,'roseDiagram':False}
+        #stereoConfig={'showGtCircles':False,'showContours':True,'linPlanes':True,'roseDiagram':False}
         
         self.contourPlot(stereoConfig)
 
@@ -149,17 +251,18 @@ class StereonetTool:
         number_of_strikes[0] += number_of_strikes[-1]
         half = np.sum(np.split(number_of_strikes[:-1], 2), 0)
         two_halves = np.concatenate([half, half])
-        fig = plt.figure(figsize=(8,8))
+        fig = plt.figure(figsize=(6,6))
 
         ax = fig.add_subplot(111, projection='polar')
 
         ax.bar(np.deg2rad(np.arange(0, 360, 10)), two_halves, 
-            width=np.deg2rad(10), bottom=0.0, color='.8', edgecolor='k')
+            width=np.deg2rad(10), bottom=0.0, color='.8', edgecolor='k', linewidth='0.5')
         ax.set_theta_zero_location('N')
         ax.set_theta_direction(-1)
-        ax.set_thetagrids(np.arange(0, 360, 10), labels=np.arange(0, 360, 10))
-        ax.set_rgrids(np.arange(1, two_halves.max() * 1.1, 2), angle=0, weight= 'black')
+        ax.set_thetagrids(np.arange(0, 360, 30), labels=np.arange(0, 360, 30))
+        ax.set_rgrids(np.arange(1, two_halves.max() * 1.1, max(1,two_halves.max()//3)), angle=0, fontsize=8)
         ax.set_title(title)
+        ax.grid(True, linewidth='0.1', linestyle='--')
 
         fig.tight_layout()
         plt.show()
@@ -177,7 +280,7 @@ class StereonetTool:
         roseAzimuth = list()
         colors=list()
 
-        stereoConfig={'showGtCircles':False,'showContours':True,'linPlanes':True,'roseDiagram':False}
+        #stereoConfig={'showGtCircles':False,'showContours':True,'linPlanes':True,'roseDiagram':False}
         
         self.iface.layerTreeView().selectedLayers()
 
@@ -223,18 +326,28 @@ class StereonetTool:
 
         if(len(roseAzimuth) != 0 and stereoConfig['roseDiagram']):
             self.rose_diagram(roseAzimuth,layer.name()+" [# "+str(len(iter))+"]")
+
         elif (len(strikes) != 0):
             fig, ax = subplots()
             ax.set_azimuth_ticks([0,30,60,90,120,150,180,210,240,270,300,330])
             ax.set_azimuth_ticklabels(['000\u00b0','030\u00b0','060\u00b0','090\u00b0','120\u00b0','150\u00b0','180\u00b0','210\u00b0','240\u00b0','270\u00b0','300\u00b0','330\u00b0'])
             ax.grid(kind='equal_area_stereonet')
             if(stereoConfig['showContours']):
-                ax.density_contour(strikes, dips, measurement='poles',cmap=cm.viridis,method='exponential_kamb',sigma=2.,linewidths =0.5)
-            if(stereoConfig['showGtCircles'] and strikeExists != -1 and colorExists != -1):
+                ax.density_contourf(strikes, dips, measurement='poles',cmap=cm.binary,method='exponential_kamb',sigma=2.,vmin=2)
+                ax.density_contour(strikes, dips, measurement='poles',cmap=cm.binary_r,method='exponential_kamb',sigma=2.,linewidths =0.5)
+
+            if(stereoConfig['showGtCircles'] and stereoConfig['linPlanes'] and strikeExists != -1 and colorExists != -1):
+                for color in enumerate(colors):
+                    ax.plane(strikes[color[0]], dips[color[0]], color=color[1], linewidth=1)
+                    ax.pole(strikes[color[0]], dips[color[0]], color=color[1], markersize=3)
+            elif(stereoConfig['showGtCircles'] and strikeExists != -1 and colorExists != -1):
                 for color in enumerate(colors):
                     ax.plane(strikes[color[0]], dips[color[0]], color=color[1], linewidth=1)
             elif(stereoConfig['showGtCircles'] and strikeExists != -1):
                 ax.plane(strikes, dips, 'k',linewidth=1)
+            elif(stereoConfig['linPlanes'] and strikeExists != -1 and colorExists != -1):
+                for color in enumerate(colors):
+                    ax.pole(strikes[color[0]], dips[color[0]], color=color[1], markersize=3)
             else:
                 for color in enumerate(colors):
                     ax.pole(strikes[color[0]], dips[color[0]], color=color[1], markersize=3)
