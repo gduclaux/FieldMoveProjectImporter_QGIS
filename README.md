@@ -52,18 +52,32 @@ If you select **image** in the LayersTree you should see a preview of the photog
 ### Dip/plunge labeling
 Dip (or plunge) labeling is set for both plane and line features. Labels are displayed when the zoom level (_scale_) of the map Canvas is larger than 1:300,000. This can be changed in the layer properties panel (Control feature labeling > Rendering > Scale dependent visibility).
 
-## Symbology limitations
+### Symbology limitations
    - Symbol colors are set to match those imposed in the original FieldMove project for the different rock units.
    - Planar structures symbologies are not as detailed as it might be in your project. Different symbologies are applied to _fault_, _joint_ and _cleavage_ plane types. All other planar measurements are represented with the defaut _bedding_ symbol. The bedding symbol isn't changing as a function of the dip angle either.
    - All lineation types are displayed using a simple arrow symbology with the arrow shaft base located on the spatial reference point of the measurement.
    - Symbology can be updated and improved using a rule-based method in QGIS.
 
+
+## Stereonet tool
+In addition to the Importer itself, the plugin now comes with an additional **Stereonet Tool** <img width="120" alt="image" src="https://github.com/user-attachments/assets/08acd5ed-1586-4a81-8642-24436a3218b5"/>. 
+
+You can use this tool to quickly explore structural data imported from FieldMove and export selected data for further analyses in external packages such as Allmendinger' Stereonet software. 
+
+Usage is simple, select the Plane or Line layer in the LayersTree, then select the features you would like to plot in the stereonet, launch the **Stereonet Tool** and select among the available plot options (contouring, great circles and/or poles, rose diagram) and plot the selected data in a Schmidt stereonet (lower hemisphere). 
+
+<p align="center">
+  <img width="950" alt="image" src="https://github.com/user-attachments/assets/d8f8705b-661c-42e2-a169-729ce1a54b99" />
+</p>
+
+
+
 ## Roadmap
  
    - Develop a template for generating a fieldbook-like report from all digital data. 
-   - Develop an exporter to display and analyse structural measurements in Allmendinger' Stereonet software.
 
 ## Credits
    - Plugin construction and manual: Guillaume Duclaux, using QGIS Plugin Builder Plugin & DeepSeek 
    - SVG symbols for geological fabrics are from Rod Holcombe [geoqsymbol page](https://www.holcombe.net.au/software/geoqsymbol.html#download)
+   - Stereonet tool is based on the [SWAXI QFIELD stereonet plugin](https://github.com/swaxi/qgis-stereonet) from Mark Jessel, itself based on the hard work carried out by Joe Kington's [mplsteronet project](https://github.com/joferkington/mplstereonet) and Daniel Childs' [qgis-stereonet project](https://github.com/childsd3/qgis-stereonet)
    - If you find this plugin useful for your research please cite this plugin using its Zenodo DOI [![DOI](https://zenodo.org/badge/957117869.svg)](https://doi.org/10.5281/zenodo.15133449)

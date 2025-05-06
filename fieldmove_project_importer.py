@@ -980,13 +980,17 @@ class FieldMoveProjectImporter:
                 rock_field = "rockUnit"
                 if layer.name()=='line': #it's a line
                     fabric_field = "lineationType"
+                    azimuth_field = "plungeAzimuth"
+                    dip_field = "plunge"
                 else: # or it's a plane
                     fabric_field = "planeType"
+                    azimuth_field = "strike"
+                    dip_field = "dip"
                 layer.setMapTipTemplate(
                     f"<b>Notes: </b>"f"\n"
                     f"[% \"{notes_field}\" %]<br>"f"\n"
                     f"<b>Geological Unit: </b>[% \"{rock_field}\" %]<br>"f"\n"
-                    f"<b>Structure Type: </b>[% \"{fabric_field}\" %]<br>"
+                    f"<b>Structure Type: </b>[% \"{fabric_field}\" %], <b>Orientation: </b>N[% \"{azimuth_field}\" %]/[% \"{dip_field}\" %]˚<br>"
                 )
             else: 
                 layer.setMapTipTemplate(
