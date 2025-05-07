@@ -310,7 +310,6 @@ class StereonetDialog(QDialog):
                         point = geom.asPoint()
                         row_data['latitude'] = point.y()  # Latitude
                         row_data['longitude'] = point.x()  # Longitude
-                        row_data['elevation'] = point.z()  # Longitude
                     
                     writer.writerow(row_data)
             
