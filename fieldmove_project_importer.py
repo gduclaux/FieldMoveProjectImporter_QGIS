@@ -143,6 +143,7 @@ class FieldMoveProjectImporter:
         self.plugin_dir = os.path.dirname(__file__)
         self.svg_dir = os.path.join(self.plugin_dir, 'SVG')
         self.actions = []
+        self.stereonet_tool = None  # Reference to stereonet tool
         self.menu = "&FieldMove Project Importer"
         
         # List of CSV files that should be treated as point layers
@@ -163,6 +164,12 @@ class FieldMoveProjectImporter:
         # Add SVG path to QGIS
         self._add_svg_path_to_qgis()
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
+        '''# Initialize stereonet tool with both arguments
+        from .stereonet import StereonetTool
+        self.stereonet_tool = StereonetTool(self.iface, self.plugin_dir)
+        stereonet_action = self.stereonet_tool.initGui()
+        self.actions.append(stereonet_action)'''
+
         icon_path = os.path.join(self.plugin_dir, 'icon.png')
         self.action = QAction(
             QIcon(icon_path),
@@ -178,14 +185,32 @@ class FieldMoveProjectImporter:
         
         self.actions.append(self.action)
 
+        # Initialize stereonet tool
+        from .stereonet import StereonetTool
+        self.stereonet_tool = StereonetTool(self.iface, self.plugin_dir)
+        stereonet_action = self.stereonet_tool.initGui()
+        self.actions.append(stereonet_action)
+        
+
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
+
+        # Clean up stereonet tool first
+        if self.stereonet_tool:
+            self.stereonet_tool.unload()
+            self.stereonet_tool = None
+            
         for action in self.actions:
             self.iface.removePluginMenu(self.menu, action)
             self.iface.removeToolBarIcon(action)
         """Cleanup when plugin is unloaded"""
         # Remove SVG path from QGIS
         self._remove_svg_path_from_qgis()
+
+        if hasattr(self, 'dlg') and self.dialog:
+            self.dialog.close()
+            self.dialog.deleteLater()
+
 
     def run(self):
         dlg = FieldMoveImportDialog(self.plugin_dir, self.iface.mainWindow())

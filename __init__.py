@@ -42,10 +42,4 @@ def classFactory(iface):  # pylint: disable=invalid-name
     """
     
     from .fieldmove_project_importer import FieldMoveProjectImporter
-    plugin = FieldMoveProjectImporter(iface)
-    
-    # Add stereonet tool
-    plugin.stereonet = StereonetTool(iface)
-    plugin.stereonet.initGui()
-    
-    return plugin
+    return FieldMoveProjectImporter(iface)

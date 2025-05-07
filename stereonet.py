@@ -52,7 +52,7 @@ class StereonetDialog(QDialog):
         self.settings = QgsSettings()
         self.plugin_dir = plugin_dir
         self.setWindowTitle("FieldMove Importer Stereonet Viewer")
-        self.setWindowIcon(QIcon(os.path.join(plugin_dir, 'stereo.png')))
+        #self.setWindowIcon(QIcon(os.path.join(plugin_dir, 'stereo.png')))
         self.setMinimumWidth(400)
         
         # Initialize with default values or saved values
@@ -215,9 +215,6 @@ class StereonetDialog(QDialog):
         self.contours_cb.setChecked(self.stereoConfig['showContours'])
         self.lin_planes_cb.setChecked(self.stereoConfig['linPlanes'])
         self.rose_diagram_cb.setChecked(self.stereoConfig['roseDiagram'])
-        
-        #if self.output_folder:
-        #    self.folder_label.setText(self.output_folder)
 
     def export_data(self):
         """Handle the export process"""
@@ -331,23 +328,32 @@ class StereonetDialog(QDialog):
             return False
 
 class StereonetTool:
-    def __init__(self, iface):
+    def __init__(self, iface, plugin_dir):
         self.iface = iface
-        self.plugin_dir = os.path.dirname(__file__)
-        self.menu = "&FieldMove Project Importer"
+        self.plugin_dir = plugin_dir
+        self.actions = []
 
     def initGui(self):
-        # Add toolbar button and menu item
-        dir_path = os.path.dirname(__file__)
-        self.action = QAction(QIcon(os.path.join(dir_path, "stereo.png")), u'Stereonet Tool', self.iface.mainWindow())
-        self.action.triggered.connect(self.run)
-        self.iface.addToolBarIcon(self.action)
-        self.iface.addPluginToMenu(self.menu, self.action)
+        """Create stereonet menu entries and toolbar icons."""
+        # Main stereonet action
+        icon_path = os.path.join(self.plugin_dir, 'stereo.png')
+        action = QAction(QIcon(icon_path), "Stereonet Viewer", self.iface.mainWindow())
+        action.triggered.connect(self.run)
+        self.iface.addPluginToMenu("&FieldMove Project Importer", action)
+        self.iface.addToolBarIcon(action)
+        self.actions.append(action)
+        
+        return action
+
 
     def unload(self):
-        self.iface.removeToolBarIcon(self.action)
-        self.iface.removePluginMenu(self.menu, action)
-        del self.action
+        """Remove all menu entries and toolbar icons."""
+        for action in self.actions:
+            self.iface.removePluginMenu("&FieldMove Project Importer", action)
+            self.iface.removeToolBarIcon(action)
+            action.triggered.disconnect()
+        self.actions = []
+
 
 
     def run(self):
