@@ -989,8 +989,8 @@ class FieldMoveProjectImporter:
                 layer.setMapTipTemplate(
                     f"<b>Notes: </b>"f"\n"
                     f"[% \"{notes_field}\" %]<br>"f"\n"
-                    f"<b>Geological Unit: </b>[% \"{rock_field}\" %]<br>"f"\n"
-                    f"<b>Structure Type: </b>[% \"{fabric_field}\" %], <b>Orientation: </b>N[% \"{azimuth_field}\" %]/[% \"{dip_field}\" %]˚<br>"
+                    f"<b>Geologic Unit: </b>[% \"{rock_field}\" %]<br>"f"\n"
+                    f"<b>Structure Type: </b>[% \"{fabric_field}\" %], <b>Orientation: </b>N[% lpad(\"{azimuth_field}\",3,'0') %]/[% \"{dip_field}\" %]˚<br>"
                 )
             else: 
                 layer.setMapTipTemplate(
