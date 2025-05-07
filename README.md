@@ -63,12 +63,12 @@ Dip (or plunge) labeling is set for both plane and line features. Labels are dis
 In addition to the Importer itself, the plugin now comes with an additional **Stereonet Tool** <img width="120" alt="Stereonet Tool launch" src="https://github.com/user-attachments/assets/0fb63f5c-5e37-40df-ba0d-27b5b7da3eb3" />. 
 
 
-You can use this tool to quickly explore structural data imported from FieldMove and export selected data for further analyses in external packages such as Allmendinger' Stereonet software. 
+You can use this tool to quickly explore structural data imported from FieldMove and export selected data for further analyses in external packages such as [Rick Allmendinger's Stereonet software](https://www.rickallmendinger.net/stereonet). 
 
 Usage is simple, select the Plane or Line layer in the LayersTree, then select the features you would like to plot in the stereonet, launch the **Stereonet Tool** and select among the available plot options (contouring, great circles and/or poles, rose diagram) and plot the selected data in a Schmidt stereonet (lower hemisphere). 
 
 <p align="center">
-  <img width="800" alt="image" src="https://github.com/user-attachments/assets/78930b6e-6e91-4a50-b620-2afcd9f43d1e" />
+  <img width="700" alt="image" src="https://github.com/user-attachments/assets/78930b6e-6e91-4a50-b620-2afcd9f43d1e" />
 </p>
 
 

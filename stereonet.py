@@ -1,13 +1,20 @@
 # -*- coding: utf-8 -*-
 """
 /***************************************************************************
- Stereonet
-                                 A QGIS plugin
- Displays a geologic stereonet of selected data
+ Stereonet Tool
+                                 Uses a QGIS plugin
+ Displays a geologic stereonet of selected data imported from FieldMove
                              -------------------
+                             Original plugin
         begin               : 2016-11-29
         copyright           : (C) 2016 by Daniel Childs
         email               : daniel@childsgeo.com
+                             -------------------
+                             New developments
+        begin               : 2025-04-29
+        copyright           : (C) 2025 by Guillaume Duclaux
+        email               : guillaume.duclaux@univ-cotedazur.fr
+        
         git sha             : $Format:%H$
  ***************************************************************************/
 
@@ -31,26 +38,30 @@ from matplotlib import cm
 from .mplstereonet import *
 from qgis.core import *
 from qgis.gui import *
-import os
+import os, csv
 from qgis.core import QgsProject
 from math import asin,sin,degrees,radians,cos,tan,atan
 import json
 
 
 class StereonetDialog(QDialog):
-    def __init__(self, plugin_dir, parent=None):
+    
+    def __init__(self, plugin_dir, iface, parent=None):
         super().__init__(parent)
+        self.iface = iface  # This is the critical addition
         self.settings = QgsSettings()
         self.plugin_dir = plugin_dir
         self.setWindowTitle("FieldMove Importer Stereonet Viewer")
         self.setWindowIcon(QIcon(os.path.join(plugin_dir, 'stereo.png')))
         self.setMinimumWidth(400)
+        
         # Initialize with default values or saved values
         self.stereoConfig = self.load_settings()
         self.output_folder = self.settings.value("stereonet_plugin/output_folder", "")
 
         self.init_ui()
         self.restore_settings()
+        
     
     def init_ui(self):
         # Create main layout
@@ -70,7 +81,7 @@ class StereonetDialog(QDialog):
         <ul>
             <li>Select data (either planes or lines) you want to plot in QGIS Map</li>
             <li>Choose stereonet settings below</li>
-            <li>(optional) Select output file name for export to CSV</li>
+            <li>(optional) Select output folder for exporting selection to CSV</li>
         </ul>
         <p>Data are coloured according to the Geologic Unit colour set in the original project. The stereonet is an equal area projection, lower hemisphere. </p>""")
         desc.setWordWrap(True)
@@ -126,9 +137,9 @@ class StereonetDialog(QDialog):
         layout.addWidget(line3)
         # Project folder selection
         folder_layout = QVBoxLayout()
-        folder_label = QLabel("<h4>Select CSV file path for export:</h4>")
+        folder_label = QLabel("<h4>Select folder path for export:</h4>")
         self.folder_edit = QLineEdit()
-        self.folder_edit.setPlaceholderText("Path to export the CSV file")
+        self.folder_edit.setPlaceholderText("Path to export CSV file")
         folder_btn = QPushButton("Browse...")
         folder_btn.clicked.connect(self.select_folder)
         
@@ -142,7 +153,7 @@ class StereonetDialog(QDialog):
         plot_btn = QPushButton("Plot")
         plot_btn.clicked.connect(self.accept)
         export_btn = QPushButton("Export")
-        export_btn.clicked.connect(self.accept)
+        export_btn.clicked.connect(self.export_data)
         cancel_btn = QPushButton("Cancel")
         cancel_btn.clicked.connect(self.reject)
         
@@ -154,14 +165,16 @@ class StereonetDialog(QDialog):
         self.setLayout(layout)
     
     def select_folder(self):
+        """Handle folder selection and update both the UI and class variable"""
         folder = QFileDialog.getExistingDirectory(
             self, 
-            "Select FieldMove Project Folder", 
+            "Select Output Folder", 
             "", 
             QFileDialog.ShowDirsOnly
         )
         if folder:
             self.folder_edit.setText(folder)
+            self.output_folder = folder  # Update the class variable
     
     def get_configuration(self):
         """Returns the stereoConfig dictionary and output folder path"""
@@ -203,14 +216,120 @@ class StereonetDialog(QDialog):
         self.lin_planes_cb.setChecked(self.stereoConfig['linPlanes'])
         self.rose_diagram_cb.setChecked(self.stereoConfig['roseDiagram'])
         
-        if self.output_folder:
-            self.folder_label.setText(self.output_folder)
+        #if self.output_folder:
+        #    self.folder_label.setText(self.output_folder)
+
+    def export_data(self):
+        """Handle the export process"""
+        # Get configuration first
+        self.stereoConfig, _ = self.get_configuration()
+        
+        # Get the current folder path from the line edit
+        self.output_folder = self.folder_edit.text()
+        
+        # Check if folder is selected
+        if not self.output_folder:
+            QMessageBox.warning(self, "Warning", "Please select an output folder first!")
+            return
+            
+        # Get active layer
+        layer = self.iface.activeLayer()
+        if not layer:
+            QMessageBox.warning(self, "Warning", "No active layer selected!")
+            return
+            
+        # Check for selected features
+        if layer.selectedFeatureCount() == 0:
+            QMessageBox.warning(self, "Warning", "No features selected in the active layer!")
+            return
+            
+        # Create output filename based on configuration
+        filename = "stereonet_export"
+        if layer.name().lower() in ['line', 'plane']:  # Case-insensitive check
+            filename += f"_{layer.name().lower()}"
+        filename += ".csv"
+        
+        output_path = os.path.join(self.output_folder, filename)
+        
+        # Export the data
+        success = self.export_selected_to_csv(layer, output_path)
+        
+        if success:
+            self.save_settings()
+            # Don't close automatically - let user see success message
+            # self.accept()  # Removed this line
     
     def accept(self):
         """Override accept to save settings before closing"""
+        # Save settings and close
         self.save_settings()
         super().accept()
         
+    def export_selected_to_csv(self, layer, output_path):
+        """Export selected features to CSV with advanced controls"""
+        try:
+            features = layer.selectedFeatures()
+            if not features:
+                return False
+
+            # Define fields to exclude
+            exclude_fields = ['localityId','dataId','x','y','zone','horiz_precision','vert_precision','declination','color']  # Example fields to skip
+            
+            # Get only the fields we want to keep
+            fields_to_export = [
+                field.name() for field in layer.fields() 
+                if field.name() not in exclude_fields
+            ]
+            
+            # Add our custom geometry fields
+            fields_to_export.extend(['latitude', 'longitude'])
+            
+            with open(output_path, 'w', newline='', encoding='utf-8') as csvfile:
+                writer = csv.DictWriter(csvfile, fieldnames=fields_to_export)
+                writer.writeheader()
+                
+                for feature in features:
+                    row_data = {}
+                    
+                    # Process regular fields
+                    for field in fields_to_export:
+                        if field in ['latitude', 'longitude','elevation']:
+                            continue  # Handle separately
+                        
+                        value = feature[field]
+                        
+                        # Special formatting for datetime fields
+                        if isinstance(value, QDateTime):
+                            row_data[field] = value.toString('yyyy-MM-dd HH:mm:ss')
+                        else:
+                            row_data[field] = value
+                    
+                    # Add geometry coordinates (for point geometry)
+                    geom = feature.geometry()
+                    if not geom.isEmpty():
+                        point = geom.asPoint()
+                        row_data['latitude'] = point.y()  # Latitude
+                        row_data['longitude'] = point.x()  # Longitude
+                        row_data['elevation'] = point.z()  # Longitude
+                    
+                    writer.writerow(row_data)
+            
+            self.iface.messageBar().pushMessage(
+                "Success",
+                f"Exported {len(features)} features to {output_path}",
+                level=Qgis.Success,
+                duration=5
+            )
+            return True
+                            
+        except Exception as e:
+            self.iface.messageBar().pushMessage(
+                "Error",
+                f"Export failed: {str(e)}",
+                level=Qgis.Critical,
+                duration=5
+            )
+            return False
 
 class StereonetTool:
     def __init__(self, iface):
@@ -233,14 +352,12 @@ class StereonetTool:
 
 
     def run(self):
-        dlg = StereonetDialog(self.plugin_dir, self.iface.mainWindow())
+        dlg = StereonetDialog(self.plugin_dir, self.iface)
         if not dlg.exec_():  # User cancelled
             return
         else:
             stereoConfig, output_folder = dlg.get_configuration()
-        
-        #stereoConfig={'showGtCircles':False,'showContours':True,'linPlanes':True,'roseDiagram':False}
-        
+                
         self.contourPlot(stereoConfig)
 
     def rose_diagram(self,strikes,title):
@@ -280,8 +397,6 @@ class StereonetTool:
         roseAzimuth = list()
         colors=list()
 
-        #stereoConfig={'showGtCircles':False,'showContours':True,'linPlanes':True,'roseDiagram':False}
-        
         self.iface.layerTreeView().selectedLayers()
 
         layers = list(QgsProject.instance().mapLayers().values())
@@ -314,8 +429,6 @@ class StereonetTool:
  
                     if strikeExists != -1 and stereoConfig['roseDiagram']:
                         roseAzimuth.append(feature[sname])
-
-
             else:
                 continue
 
@@ -331,7 +444,7 @@ class StereonetTool:
             fig, ax = subplots()
             ax.set_azimuth_ticks([0,30,60,90,120,150,180,210,240,270,300,330])
             ax.set_azimuth_ticklabels(['000\u00b0','030\u00b0','060\u00b0','090\u00b0','120\u00b0','150\u00b0','180\u00b0','210\u00b0','240\u00b0','270\u00b0','300\u00b0','330\u00b0'])
-            ax.grid(kind='equal_area_stereonet')
+            ax.grid(kind='equal_area_stereonet',linewidth='0.2')
             if(stereoConfig['showContours']):
                 ax.density_contourf(strikes, dips, measurement='poles',cmap=cm.binary,method='exponential_kamb',sigma=2.,vmin=2)
                 ax.density_contour(strikes, dips, measurement='poles',cmap=cm.binary_r,method='exponential_kamb',sigma=2.,linewidths =0.5)

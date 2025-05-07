@@ -15,7 +15,7 @@ from . import contouring
 from . import stereonet_transforms
 
 class StereonetAxes(LambertAxes):
-    """An axes representing a lower-hemisphere "schmitt" (a.k.a. equal area)
+    """An axes representing a lower-hemisphere "schmidt" (a.k.a. equal area)
     projection."""
 
     name = 'stereonet'
@@ -271,7 +271,7 @@ class StereonetAxes(LambertAxes):
                                           rotation=bearing)
         self._overlay_axes._polar.remove()
         self._overlay_axes.format_coord = self._overlay_format_coord
-        self._overlay_axes.grid(True)
+        self._overlay_axes.grid(True, linewidth='0.1')
 
     def set_longitude_grid_ends(self, value):
         LambertAxes.set_longitude_grid_ends(self, value)
@@ -829,7 +829,7 @@ class EqualAngleAxes(StereonetAxes):
     name = 'equal_angle_stereonet'
 
 class EqualAreaAxes(StereonetAxes):
-    """An axes representing a lower-hemisphere "Schmitt" (a.k.a. equal area)
+    """An axes representing a lower-hemisphere "Schmidt" (a.k.a. equal area)
     projection."""
     name = 'equal_area_stereonet'
 
