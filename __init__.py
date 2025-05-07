@@ -6,7 +6,8 @@
  This plugins consolidate FieldMove project files into a QGIS project
  Generated using Plugin Builder: http://g-sherman.github.io/Qgis-Plugin-Builder/
  with massive help from deepseek. SVG symbols originals after Rod Holcombe: 
- https://www.holcombe.net.au/software/geoqsymbol.html
+ https://www.holcombe.net.au/software/geoqsymbol.html. Now includes a Stereonet tool.
+ 
                               -------------------
         begin                : 2025-03-29
         git sha              : $Format:%H$
