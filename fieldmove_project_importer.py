@@ -164,11 +164,6 @@ class FieldMoveProjectImporter:
         # Add SVG path to QGIS
         self._add_svg_path_to_qgis()
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
-        '''# Initialize stereonet tool with both arguments
-        from .stereonet import StereonetTool
-        self.stereonet_tool = StereonetTool(self.iface, self.plugin_dir)
-        stereonet_action = self.stereonet_tool.initGui()
-        self.actions.append(stereonet_action)'''
 
         icon_path = os.path.join(self.plugin_dir, 'icon.png')
         self.action = QAction(
@@ -1017,6 +1012,16 @@ class FieldMoveProjectImporter:
                     f"<b>Geologic Unit: </b>[% \"{rock_field}\" %]<br>"f"\n"
                     f"<b>Structure Type: </b>[% \"{fabric_field}\" %], <b>Orientation: </b>N[% lpad(\"{azimuth_field}\",3,'0') %]/[% \"{dip_field}\" %]˚<br>"
                 )
+            elif layer.name() in ['localities']:
+                name_field = "name"
+                description_field = "description"
+                layer.setMapTipTemplate(
+                    f"<b>Locality name: </b>"f"\n"
+                    f"[% \"{name_field}\" %]<br>"
+                    f"<b>Notes: </b>"f"\n"
+                    f"[% \"{description_field}\" %]<br>"
+                )
+
             else: 
                 layer.setMapTipTemplate(
                     f"<b>Notes: </b>"f"\n"

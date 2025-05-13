@@ -373,9 +373,10 @@ class StereonetTool:
         number_of_strikes[0] += number_of_strikes[-1]
         half = np.sum(np.split(number_of_strikes[:-1], 2), 0)
         two_halves = np.concatenate([half, half])
-        fig = plt.figure(figsize=(6.5,4.8))
+        #fig = plt.figure(figsize=(6.5,4.8))
+        fig, ax = subplots(projection='polar')
 
-        ax = fig.add_subplot(111, projection='polar')
+        #ax = fig.add_subplot(111, projection='polar')
 
         ax.bar(np.deg2rad(np.arange(0, 360, 10)), two_halves, 
             width=np.deg2rad(10), bottom=0.0, color='.8', edgecolor='k', linewidth='0.5')
@@ -386,7 +387,7 @@ class StereonetTool:
         ax.set_title(title)
         ax.grid(True, linewidth='0.1', linestyle='--')
 
-        fig.tight_layout()
+        #fig.tight_layout()
         plt.show()
         
     def contourPlot(self,stereoConfig):
