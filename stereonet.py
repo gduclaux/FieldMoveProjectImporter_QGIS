@@ -96,7 +96,10 @@ class StereonetDialog(QDialog):
         # Create checkboxes with separators
 
         # Option 1 - planes or lines: contouring
-        desc=QLabel("""<h4>Contouring display option</h4>""")
+        desc=QLabel("""<h4>Contouring display option</h4>
+                    <p><i>contouring method : exponential kamb with E=2σ [<a href='https://doi.org/10.1016/0098-3004(94)00058-3'>Vollmer, 1995</a>]</i></p>""")
+        #display exponential_kamb contouring method,with sigma=2.
+        desc.linkActivated.connect(lambda url: QDesktopServices.openUrl(QUrl(url)))
         layout.addWidget(desc)
         self.contours_cb = QCheckBox("Show Contours")
         layout.addWidget(self.contours_cb)
@@ -123,7 +126,8 @@ class StereonetDialog(QDialog):
         line2.setFrameShadow(QFrame.Sunken)
         layout.addWidget(line2)
         desc=QLabel("""<h4>Rose diagram option</h4>
-                    <p>if selected individual planes or lines, or their contours won't be displayed</p>""")
+                    <p><i>if selected individual planes or lines, or their contours won't be displayed.</i></p>
+                    <p><b>THIS OPTION IS CURRENTLY NOT WORKING ON WINDOWS MACHINE</b></p>""")
         layout.addWidget(desc)
         
         # Option 4 - Rose Diagram
@@ -373,10 +377,7 @@ class StereonetTool:
         number_of_strikes[0] += number_of_strikes[-1]
         half = np.sum(np.split(number_of_strikes[:-1], 2), 0)
         two_halves = np.concatenate([half, half])
-        #fig = plt.figure(figsize=(6.5,4.8))
         fig, ax = subplots(projection='polar')
-
-        #ax = fig.add_subplot(111, projection='polar')
 
         ax.bar(np.deg2rad(np.arange(0, 360, 10)), two_halves, 
             width=np.deg2rad(10), bottom=0.0, color='.8', edgecolor='k', linewidth='0.5')
@@ -384,11 +385,11 @@ class StereonetTool:
         ax.set_theta_direction(-1)
         ax.set_thetagrids(np.arange(0, 360, 30), labels=[f"{angle:03d}\u00b0" for angle in np.arange(0, 360, 30)])
         ax.set_rgrids(np.arange(1, two_halves.max() * 1.1, max(1,two_halves.max()//3)), angle=180, fontsize=8)
-        ax.set_title(title)
+        ax.set_title(title, pad=24)
         ax.grid(True, linewidth='0.1', linestyle='--')
 
-        #fig.tight_layout()
-        plt.show()
+        fig.tight_layout()
+        #plt.show()
         
     def contourPlot(self,stereoConfig):
         sname='strike'
@@ -445,6 +446,7 @@ class StereonetTool:
 
         if(len(roseAzimuth) != 0 and stereoConfig['roseDiagram']):
             self.rose_diagram(roseAzimuth,layer.name()+" [# "+str(len(iter))+"]")
+            plt.show()
 
         elif (len(strikes) != 0):
             fig, ax = subplots()
