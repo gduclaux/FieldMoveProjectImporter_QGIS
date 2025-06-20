@@ -77,9 +77,6 @@ Usage is simple, select the Plane or Line layer in the LayersTree, then select t
  
    - Develop a template for generating a fieldbook-like report from all digital data. 
 
-## Known bugs
- 
-   - The Rose diagram option of the Stereonet tool returns an empty figure on MS Windows OS. 
 
 ## Credits
    - Plugin construction and manual: Guillaume Duclaux, using QGIS Plugin Builder Plugin & DeepSeek 

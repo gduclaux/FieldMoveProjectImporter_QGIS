@@ -38,7 +38,7 @@ from matplotlib import cm
 from .mplstereonet import *
 from qgis.core import *
 from qgis.gui import *
-import os, csv
+import os, csv, sys
 from qgis.core import QgsProject
 from math import asin,sin,degrees,radians,cos,tan,atan
 import json
@@ -126,8 +126,7 @@ class StereonetDialog(QDialog):
         line2.setFrameShadow(QFrame.Sunken)
         layout.addWidget(line2)
         desc=QLabel("""<h4>Rose diagram option</h4>
-                    <p><i>if selected individual planes or lines, or their contours won't be displayed.</i></p>
-                    <p><b>THIS OPTION IS CURRENTLY NOT WORKING ON WINDOWS MACHINE</b></p>""")
+                    <p><i>if selected individual planes or lines, or their contours won't be displayed.</i></p>""")
         layout.addWidget(desc)
         
         # Option 4 - Rose Diagram
@@ -371,16 +370,17 @@ class StereonetTool:
 
     def rose_diagram(self,strikes,title):
         #modified from: http://geologyandpython.com/structural_geology.html
-
         bin_edges = np.arange(-5, 366, 10)
         number_of_strikes, bin_edges = np.histogram(strikes, bin_edges)
         number_of_strikes[0] += number_of_strikes[-1]
         half = np.sum(np.split(number_of_strikes[:-1], 2), 0)
         two_halves = np.concatenate([half, half])
-        fig, ax = subplots(projection='polar')
-
-        ax.bar(np.deg2rad(np.arange(0, 360, 10)), two_halves, 
-            width=np.deg2rad(10), bottom=0.0, color='.8', edgecolor='k', linewidth='0.5')
+        fig = plt.figure()
+        ax = fig.add_subplot(111,polar=True)
+        ax.bar(np.deg2rad(np.arange(0, 360, 10)), two_halves, width=np.deg2rad(10),
+            linewidth=0.5, color='0.8',edgecolor='k')
+        #ax.bar(np.deg2rad(np.arange(0, 360, 10)), two_halves, 
+        #    width=np.deg2rad(10), bottom=0.0, color='.8', edgecolor='k',linewidth='0.5')
         ax.set_theta_zero_location('N')
         ax.set_theta_direction(-1)
         ax.set_thetagrids(np.arange(0, 360, 30), labels=[f"{angle:03d}\u00b0" for angle in np.arange(0, 360, 30)])
@@ -389,7 +389,7 @@ class StereonetTool:
         ax.grid(True, linewidth='0.1', linestyle='--')
 
         fig.tight_layout()
-        #plt.show()
+        plt.show()
         
     def contourPlot(self,stereoConfig):
         sname='strike'
