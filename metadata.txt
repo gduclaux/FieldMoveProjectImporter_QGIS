@@ -6,7 +6,7 @@
 name=FieldMove Project Importer
 qgisMinimumVersion=3.4
 description=This plugin consolidates FieldMove project files into a QGIS project
-version=0.3
+version=1.0
 author=Guillaume Duclaux, Université Côte d'Azur
 email=guillaume.duclaux@univ-cotedazur.fr
 
@@ -23,13 +23,13 @@ hasProcessingProvider=no
 # changelog=
 
 # Tags are comma separated with spaces allowed
-tags=python
+tags=python, geology, geological mapping, geosciences
 
 homepage=https://github.com/gduclaux/FieldMoveProjectImporter_QGIS
 category=Plugins
 icon=icon.png
 # experimental flag
-experimental=True
+experimental=False
 
 # deprecated flag (applies to the whole plugin, not just a single version)
 deprecated=False
