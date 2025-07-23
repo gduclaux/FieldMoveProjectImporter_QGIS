@@ -421,7 +421,10 @@ class StereonetTool:
 
                 for feature in iter:
                     if colorExists != -1:
-                        colors.append(feature[color])
+                        if feature[color] is '': #in case no color was set
+                            colors.append('#000000')
+                        else:
+                            colors.append(feature[color])
 
                     if strikeExists != -1 and dipExists != -1:
                         strikes.append(feature[sname])
