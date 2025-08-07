@@ -423,6 +423,8 @@ class StereonetTool:
                     if colorExists != -1:
                         if feature[color] is '': #in case no color was set
                             colors.append('#000000')
+                        elif feature[color] == NULL: #in case color is encoded as NULL (qgis.core.NULL)
+                            colors.append('#000000')
                         else:
                             colors.append(feature[color])
 
