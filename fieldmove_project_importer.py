@@ -1099,7 +1099,18 @@ class FieldMoveProjectImporter:
         
         # Get current QGIS SVG paths
         settings = QgsSettings()
-        current_paths = settings.value('svg/searchPathsForSVG', [], type=list)
+        try:
+            raw = settings.value('svg/searchPathsForSVG', None)
+        except TypeError:
+            raw = None
+
+        if not raw:
+            current_paths = []
+        elif isinstance(raw, (list, tuple)):
+            current_paths = [str(p) for p in raw]
+        else:
+            current_paths = [str(raw)]
+        #current_paths = settings.value('svg/searchPathsForSVG', [], type=list) #this seem to return a QVariant/QMetaType error with Windows 11 Pro, so the above is a more robust way to handle different formats and potential errors in the settings value
         
         # Convert to standardized path format for comparison
         normalized_svg_path = os.path.normpath(svg_path)
@@ -1126,7 +1137,18 @@ class FieldMoveProjectImporter:
         svg_path = os.path.join(self.plugin_dir, 'SVG')
         
         settings = QgsSettings()
-        current_paths = settings.value('svg/searchPathsForSVG', [], type=list)
+        try:
+            raw = settings.value('svg/searchPathsForSVG', None)
+        except TypeError:
+            raw = None
+
+        if not raw:
+            current_paths = []
+        elif isinstance(raw, (list, tuple)):
+            current_paths = [str(p) for p in raw]
+        else:
+            current_paths = [str(raw)]
+        #current_paths = settings.value('svg/searchPathsForSVG', [], type=list)
         
         # Remove our path if present
         normalized_svg_path = os.path.normpath(svg_path)
