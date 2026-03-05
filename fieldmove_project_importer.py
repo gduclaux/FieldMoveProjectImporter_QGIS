@@ -997,7 +997,9 @@ class FieldMoveProjectImporter:
         try:
             # Check if layer is line or plane and display map tips details accordingly
             if layer.name() in ['line','plane']:
-                rock_field = "rockUnit"
+                for field in layer.fields():
+                    if field.name().lower() in ['rockunit', ' rockunit', 'unitid']:
+                        rock_field = field.name()
                 if layer.name()=='line': #it's a line
                     fabric_field = "lineationType"
                     azimuth_field = "plungeAzimuth"
